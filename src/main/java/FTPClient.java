@@ -1,9 +1,14 @@
 import ftp.core.FTPConnection;
+import ftp.core.RemoteConnectionFactory;
 import ftp.core.RemoteConnection;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Scanner;
 
 public class FTPClient {
+
+    private static Logger logger = LogManager.getLogger(FTPClient.class);
 
     public static void showOptions(){
         System.out.println("Select from Following options (Enter option number).\n" +
@@ -25,17 +30,30 @@ public class FTPClient {
     }
 
     public static void main(String[] args) throws Exception {
+        logger.debug("Main method Execution -> Starts");
+
         Scanner scan = new Scanner(System.in);
         String userOption;
         boolean repeateProcess = true;
 
-        String hostName = "127.0.0.1";
+        System.out.println("HostName:");
+//        String hostName = "127.0.0.1";
+        String hostName = scan.nextLine();
         System.out.println("UserName:");
         String userName = scan.nextLine();
         System.out.println("Password:");
         String password = scan.nextLine();
+        System.out.println("Select Protocol: 1. FTP \t 2. SFTP");
+        String protocol = "";
+        String protocolNum = scan.nextLine();
+        if(protocolNum.equals("1"))
+            protocol = "FTP";
+        else
+            protocol = "SFTP";
 
-        RemoteConnection remoteConnection = new FTPConnection();
+        RemoteConnectionFactory remoteConnectionFactory = new RemoteConnectionFactory();
+        RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(protocol);
+
         boolean connected = remoteConnection.connect(hostName, userName, password);
         if(connected){
 
@@ -125,7 +143,8 @@ public class FTPClient {
             }
         }else {
             System.out.println("Error: Could not connect to the Server.");
+            logger.info("Provide HostName, UserName, Password and select Protocol, when prompted.");
         }
-
+        logger.debug("Main Method Execution -> Ends");
     }
 }
