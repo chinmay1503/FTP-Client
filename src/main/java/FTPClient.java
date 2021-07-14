@@ -1,4 +1,3 @@
-import ftp.core.FTPConnection;
 import ftp.core.RemoteConnectionFactory;
 import ftp.core.RemoteConnection;
 import org.apache.logging.log4j.LogManager;

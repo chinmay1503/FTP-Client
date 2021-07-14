@@ -1,8 +1,0 @@
-ftp\core\FTPConnection.class
-ftp\core\SFTPConnection.class
-ftp\core\ConnectionUtils.class
-ftp\core\FTPClientException.class
-ftp\core\FTPSConnection.class
-ftp\core\RemoteConnectionFactory.class
-ftp\core\RemoteConnection.class
-FTPClient.class
