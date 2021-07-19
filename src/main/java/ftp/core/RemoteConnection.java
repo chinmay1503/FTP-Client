@@ -8,7 +8,7 @@ public interface RemoteConnection {
 
     void disconnect() throws FTPClientException;
 
-    boolean createNewDirectory(String dirName) throws FTPClientException;
+    boolean createNewDirectory(String dirName) throws FTPClientException, IOException;
 
     int getClientReplyCode() throws FTPClientException;
 

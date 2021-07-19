@@ -50,7 +50,7 @@ public class FTP_ClientTest {
     }
 
     @Test
-    public void deleteDirectoryFTPTest() throws FTPClientException {
+    public void deleteDirectoryFTPTest() throws FTPClientException, IOException {
         RemoteConnectionFactory remoteConnectionFactory = new RemoteConnectionFactory();
         RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(prop.getProperty("protocol"));
         boolean connected = remoteConnection.connect(prop.getProperty("hostname"), prop.getProperty("username"), prop.getProperty("password"));
