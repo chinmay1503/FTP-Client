@@ -9,6 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 public class SFTPConnection implements RemoteConnection {
 
@@ -55,4 +56,15 @@ public class SFTPConnection implements RemoteConnection {
     public boolean checkDirectoryExists(String dirPath) throws IOException {
         return false;
     }
+
+    @Override
+    public boolean getRemoteFile(String remoteDirName, String localPath) throws IOException {
+        return false;
+    }
+
+    @Override
+    public boolean getRemoteFile(String remoteDirName, OutputStream localPath) throws IOException {
+        return false;
+    }
+
 }

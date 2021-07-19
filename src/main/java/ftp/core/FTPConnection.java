@@ -2,7 +2,10 @@ package ftp.core;
 
 import org.apache.commons.net.ftp.FTPClient;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.SocketException;
 
 
@@ -62,4 +65,17 @@ public class FTPConnection implements RemoteConnection {
         }
         return true;
     }
+
+    public boolean getRemoteFile(String remoteDirName, String localPath) throws IOException {
+        FileOutputStream fileOut = new FileOutputStream(localPath);
+        ObjectOutputStream out = new ObjectOutputStream(fileOut);
+        getRemoteFile(remoteDirName, out);
+        return true;
+    }
+
+    public boolean getRemoteFile(String remoteDirName, OutputStream localPath) throws IOException {
+        client.retrieveFile(remoteDirName, localPath);
+        return true;
+    }
 }
+

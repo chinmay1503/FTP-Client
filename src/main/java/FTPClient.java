@@ -33,6 +33,7 @@ public class FTPClient {
 
         Scanner scan = new Scanner(System.in);
         String userOption;
+        String userInput;
         boolean repeateProcess = true;
 
         System.out.println("HostName:");
@@ -71,7 +72,33 @@ public class FTPClient {
 
                     case "2":
                         System.out.println("2. Get file from remote server\n");
-                        System.out.println("coming soon ... \n");
+                        String remoteFileUserInput;
+                        String localPathUserInput;
+                        boolean promptForRemoteFile = true;
+//                        boolean promptForLocalPath = true;
+
+                        // Prompt user for remote file to be downloaded
+                        do {
+                            System.out.println("Enter File Name to download from Remote Server: \n");
+                            remoteFileUserInput = scan.nextLine();
+                            if (!remoteConnection.checkDirectoryExists(remoteFileUserInput)) {
+                                System.out.println("-- Error: could not locate Directory with the name " + remoteFileUserInput +
+                                        " in remote server --");
+                                System.out.println("Enter File Name to download from Remote Server: \n");
+                            }
+                            else {
+                                promptForRemoteFile = false;
+                            }
+                        } while(promptForRemoteFile);
+
+                        // Prompt user for local absolute path
+                        // Unsure how to verify user's absolute path. No re-prompting
+                        System.out.println("Enter File Path to download to: \n");
+                        localPathUserInput = scan.nextLine();
+
+
+                        remoteConnection.getRemoteFile(remoteFileUserInput, localPathUserInput);
+
                         break;
 
                     case "3":
