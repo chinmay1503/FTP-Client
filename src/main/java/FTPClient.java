@@ -39,7 +39,6 @@ public class FTPClient {
         boolean repeateProcess = true;
 
         System.out.println("HostName: (Eg: 127.0.0.1 or www.yourServer.com)");
-//        String hostName = "127.0.0.1";
         String hostName = scan.nextLine();
         if (isNullOrEmpty(hostName))
             hostName = "127.0.0.1";
@@ -50,7 +49,7 @@ public class FTPClient {
         String password = scan.nextLine();
         checkNullOrEmpty(userName, password);
         System.out.println("Select Protocol: 1. FTP \t 2. SFTP");
-        String protocol = "";
+        String protocol;
         String protocolNum = scan.nextLine();
         if(protocolNum.equals("1"))
             protocol = "FTP";
@@ -114,7 +113,7 @@ public class FTPClient {
                             }
                             else {
                                 System.out.println("-- Error: could not create New Directory in remote server --\n"+
-                                        "Do you want try creating Directory again ? (y/n)");
+                                        "Directory may already exist. Do you want try creating Directory again ? (y/n)");
                                 String tryAgain = scan.nextLine();
                                 if(tryAgain.equals("y")){
                                     tryCreatingDirAgain = true;

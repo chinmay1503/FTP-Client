@@ -61,4 +61,16 @@ public class FTP_ClientTest {
         assertFalse(remoteConnection.checkDirectoryExists(path));
     }
 
+    @Test
+    public void makeNewDirectoryTest() throws FTPClientException, IOException {
+        RemoteConnectionFactory remoteConnectionFactory = new RemoteConnectionFactory();
+        RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(prop.getProperty("protocol"));
+        boolean connected = remoteConnection.connect(prop.getProperty("hostname"), prop.getProperty("username"), prop.getProperty("password"));
+        assertTrue(connected);
+        String path = "/newTestDir";
+        boolean result = remoteConnection.createNewDirectory(path);
+        assertTrue(result);
+        remoteConnection.deleteDirectory(path);
+    }
+
 }

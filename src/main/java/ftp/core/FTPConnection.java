@@ -1,7 +1,6 @@
 package ftp.core;
 
 import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.ftp.FTPFile;
 
 import java.io.IOException;
@@ -43,10 +42,8 @@ public class FTPConnection implements RemoteConnection {
 
     public boolean createNewDirectory(String dirName) throws IOException {
         try{
-            boolean val = client.makeDirectory(dirName);
-            return val;
+            return client.makeDirectory(dirName);
         } catch (SocketException e) {
-//            e.printStackTrace();
             System.out.println("Something went wrong, when trying to create directory \""+dirName+"\"\n" +
                     "Give valid Directory path/ name .");
         }
@@ -54,8 +51,7 @@ public class FTPConnection implements RemoteConnection {
     }
 
     public int getClientReplyCode() {
-        int returnCode = client.getReplyCode();
-        return returnCode;
+        return client.getReplyCode();
     }
 
     @Override
