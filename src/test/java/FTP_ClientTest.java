@@ -1,20 +1,64 @@
-import ftp.core.FTPConnection;
-import org.apache.commons.net.ftp.FTPClient;
+import ftp.core.FTPClientException;
+import ftp.core.RemoteConnection;
+import ftp.core.RemoteConnectionFactory;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Unit tests for {@link FTPClient} class.
- */
 public class FTP_ClientTest {
 
-    @Test
-    public void test_JUnit() {
-        String str1="This is the testcase in this class";
-        assertEquals("This is the testcase in this class", str1);
+    static Properties prop = new Properties();
+
+    @BeforeAll
+    public static void initializeProp() throws IOException, FTPClientException {
+        FileInputStream fs = null;
+        try {
+            File propFile = new File("src/test/resources/connection_details.properties");
+            fs = new FileInputStream(propFile);
+            prop.load(fs);
+        } catch (IOException e) {
+            throw new FTPClientException(e);
+        } finally {
+            if (fs != null) {
+                fs.close();
+            }
+        }
     }
+
+    @Test
+    public void printPresentWorkingDirectory() throws FTPClientException {
+        RemoteConnectionFactory remoteConnectionFactory = new RemoteConnectionFactory();
+        RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(prop.getProperty("protocol"));
+        boolean connected = remoteConnection.connect(prop.getProperty("hostname"), prop.getProperty("username"), prop.getProperty("password"));
+        assertTrue(connected);
+        remoteConnection.getCurrentRemoteDirectory();
+    }
+
+    @Test
+    public void listFilePresentInCurrentRemoteDirectory() throws FTPClientException {
+        RemoteConnectionFactory remoteConnectionFactory = new RemoteConnectionFactory();
+        RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(prop.getProperty("protocol"));
+        boolean connected = remoteConnection.connect(prop.getProperty("hostname"), prop.getProperty("username"), prop.getProperty("password"));
+        assertTrue(connected);
+        remoteConnection.listCurrentDirectory();
+    }
+
+    @Test
+    public void deleteDirectoryFTPTest() throws FTPClientException {
+        RemoteConnectionFactory remoteConnectionFactory = new RemoteConnectionFactory();
+        RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(prop.getProperty("protocol"));
+        boolean connected = remoteConnection.connect(prop.getProperty("hostname"), prop.getProperty("username"), prop.getProperty("password"));
+        assertTrue(connected);
+        String path = "/Test";
+        remoteConnection.createNewDirectory(path);
+        assertTrue(remoteConnection.deleteDirectory(path));
+        assertFalse(remoteConnection.checkDirectoryExists(path));
+    }
+
 }

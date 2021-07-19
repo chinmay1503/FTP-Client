@@ -1,3 +1,4 @@
+import ftp.core.FTPClientException;
 import ftp.core.RemoteConnectionFactory;
 import ftp.core.RemoteConnection;
 import org.apache.logging.log4j.LogManager;
@@ -5,9 +6,11 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Scanner;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
+
 public class FTPClient {
 
-    private static Logger logger = LogManager.getLogger(FTPClient.class);
+    private static final Logger logger = LogManager.getLogger(FTPClient.class);
 
     public static void showOptions(){
         System.out.println("Select from Following options (Enter option number).\n" +
@@ -38,10 +41,14 @@ public class FTPClient {
         System.out.println("HostName: (Eg: 127.0.0.1 or www.yourServer.com)");
 //        String hostName = "127.0.0.1";
         String hostName = scan.nextLine();
+        if (isNullOrEmpty(hostName))
+            hostName = "127.0.0.1";
         System.out.println("UserName:");
         String userName = scan.nextLine();
+        checkNullOrEmpty(userName, "userName");
         System.out.println("Password:");
         String password = scan.nextLine();
+        checkNullOrEmpty(userName, password);
         System.out.println("Select Protocol: 1. FTP \t 2. SFTP");
         String protocol = "";
         String protocolNum = scan.nextLine();
@@ -118,7 +125,14 @@ public class FTPClient {
 
                     case "8":
                         System.out.println("8. Delete directories from remote server\n");
-                        System.out.println("coming soon ... \n");
+                        System.out.print("Please enter the path to the remote directory you would like to delete: ");
+                        String path = scan.nextLine();
+                        if(remoteConnection.deleteDirectory(path)) {
+                            System.out.println("Directory deleted Successfully. \n");
+                        }
+                        else {
+                            System.out.println("-- Error: could not delete New Directory in remote server --");
+                        }
                         break;
 
                     case "14":
@@ -141,5 +155,10 @@ public class FTPClient {
             logger.info("Provide HostName, UserName, Password and select Protocol, when prompted.");
         }
         logger.debug("Main Method Execution -> Ends");
+    }
+
+    public static void checkNullOrEmpty(String input, String fieldName) throws FTPClientException {
+        if (isNullOrEmpty(input))
+            throw new FTPClientException(String.format("Field [%s] is mandatory", fieldName));
     }
 }

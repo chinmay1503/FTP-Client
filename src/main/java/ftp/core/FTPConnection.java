@@ -2,6 +2,7 @@ package ftp.core;
 
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
+import org.apache.commons.net.ftp.FTPFile;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -52,17 +53,52 @@ public class FTPConnection implements RemoteConnection {
         return false;
     }
 
-    public int getClientReplyCode() throws IOException{
+    public int getClientReplyCode() {
         int returnCode = client.getReplyCode();
         return returnCode;
     }
 
-    public boolean checkDirectoryExists(String dirPath) throws IOException {
-        client.changeWorkingDirectory(dirPath);
-        int returnCode = client.getReplyCode();
-        if (returnCode == 550) {
-            return false;
+    @Override
+    public boolean checkDirectoryExists(String dirPath) throws FTPClientException {
+        try {
+            client.changeWorkingDirectory(dirPath);
+            int returnCode = client.getReplyCode();
+            if (returnCode == 550) {
+                return false;
+            }
+        } catch (IOException e) {
+            throw new FTPClientException(e);
         }
         return true;
+    }
+
+    @Override
+    public void getCurrentRemoteDirectory() throws FTPClientException {
+        try {
+            System.out.println(client.printWorkingDirectory());
+        } catch (IOException e) {
+            throw new FTPClientException(e);
+        }
+    }
+
+    @Override
+    public void listCurrentDirectory() throws FTPClientException {
+        try {
+            FTPFile[] ftpFiles = client.listFiles();
+            for (FTPFile file : ftpFiles) {
+                System.out.println(file.getName());
+            }
+        } catch (IOException e) {
+            throw new FTPClientException(e);
+        }
+    }
+
+    @Override
+    public boolean deleteDirectory(String dirPath) throws FTPClientException {
+        try {
+            return client.removeDirectory(dirPath);
+        } catch (IOException e) {
+            throw new FTPClientException(e);
+        }
     }
 }
