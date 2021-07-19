@@ -1,14 +1,10 @@
 package ftp.core;
 
-import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
+import com.jcraft.jsch.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
 
 public class SFTPConnection implements RemoteConnection {
 
@@ -41,18 +37,31 @@ public class SFTPConnection implements RemoteConnection {
         logger.info("Disconnecting from the remote server");
     }
 
+
     @Override
-    public boolean createNewDirectory(String dirName) throws IOException {
+    public boolean deleteDirectory(String dirPath) throws FTPClientException {
+        try {
+            logger.debug("Going to delete file :[" + dirPath + "]");
+            sftpChannel.rmdir(dirPath);
+            logger.debug("File deleted successfully.");
+            return true;
+        } catch (SftpException e) {
+            throw new FTPClientException(e);
+        }
+    }
+
+    @Override
+    public boolean createNewDirectory(String dirName) throws FTPClientException {
         return false;
     }
 
     @Override
-    public int getClientReplyCode() throws IOException {
+    public int getClientReplyCode() throws FTPClientException {
         return 0;
     }
 
     @Override
-    public boolean checkDirectoryExists(String dirPath) throws IOException {
+    public boolean checkDirectoryExists(String dirPath) throws FTPClientException {
         return false;
     }
 }

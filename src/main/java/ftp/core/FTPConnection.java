@@ -49,17 +49,31 @@ public class FTPConnection implements RemoteConnection {
         return false;
     }
 
-    public int getClientReplyCode() throws IOException{
+    public int getClientReplyCode() {
         int returnCode = client.getReplyCode();
         return returnCode;
     }
 
-    public boolean checkDirectoryExists(String dirPath) throws IOException {
-        client.changeWorkingDirectory(dirPath);
-        int returnCode = client.getReplyCode();
-        if (returnCode == 550) {
-            return false;
+    @Override
+    public boolean checkDirectoryExists(String dirPath) throws FTPClientException {
+        try {
+            client.changeWorkingDirectory(dirPath);
+            int returnCode = client.getReplyCode();
+            if (returnCode == 550) {
+                return false;
+            }
+        } catch (IOException e) {
+            throw new FTPClientException(e);
         }
         return true;
+    }
+
+    @Override
+    public boolean deleteDirectory(String dirPath) throws FTPClientException {
+        try {
+            return client.removeDirectory(dirPath);
+        } catch (IOException e) {
+            throw new FTPClientException(e);
+        }
     }
 }
