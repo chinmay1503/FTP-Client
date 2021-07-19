@@ -12,6 +12,10 @@ public interface RemoteConnection {
 
     int getClientReplyCode() throws FTPClientException;
 
+    void getCurrentRemoteDirectory() throws FTPClientException;
+
+    void listCurrentDirectory() throws FTPClientException;
+
     boolean checkDirectoryExists(String dirPath) throws FTPClientException;
 
     boolean deleteDirectory(String dirPath) throws  FTPClientException;

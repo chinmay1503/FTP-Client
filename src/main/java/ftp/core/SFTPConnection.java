@@ -5,6 +5,8 @@ import com.jcraft.jsch.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Iterator;
+import java.util.Vector;
 
 public class SFTPConnection implements RemoteConnection {
 
@@ -35,6 +37,29 @@ public class SFTPConnection implements RemoteConnection {
         sftpChannel.disconnect();
         session.disconnect();
         logger.info("Disconnecting from the remote server");
+    }
+
+
+    @Override
+    public void getCurrentRemoteDirectory() throws FTPClientException {
+        try {
+            System.out.println(sftpChannel.pwd());
+        } catch (SftpException e) {
+            throw new FTPClientException(e);
+        }
+    }
+
+    @Override
+    public void listCurrentDirectory() throws FTPClientException {
+        try {
+            Vector ls = sftpChannel.ls(sftpChannel.pwd());
+            Iterator iterator = ls.iterator();
+            while (iterator.hasNext()) {
+                System.out.println(iterator.next());
+            }
+        } catch (SftpException e) {
+            throw new FTPClientException(e);
+        }
     }
 
 

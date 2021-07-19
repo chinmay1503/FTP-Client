@@ -32,6 +32,24 @@ public class FTP_ClientTest {
     }
 
     @Test
+    public void printPresentWorkingDirectory() throws FTPClientException {
+        RemoteConnectionFactory remoteConnectionFactory = new RemoteConnectionFactory();
+        RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(prop.getProperty("protocol"));
+        boolean connected = remoteConnection.connect(prop.getProperty("hostname"), prop.getProperty("username"), prop.getProperty("password"));
+        assertTrue(connected);
+        remoteConnection.getCurrentRemoteDirectory();
+    }
+
+    @Test
+    public void listFilePresentInCurrentRemoteDirectory() throws FTPClientException {
+        RemoteConnectionFactory remoteConnectionFactory = new RemoteConnectionFactory();
+        RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(prop.getProperty("protocol"));
+        boolean connected = remoteConnection.connect(prop.getProperty("hostname"), prop.getProperty("username"), prop.getProperty("password"));
+        assertTrue(connected);
+        remoteConnection.listCurrentDirectory();
+    }
+
+    @Test
     public void deleteDirectoryFTPTest() throws FTPClientException {
         RemoteConnectionFactory remoteConnectionFactory = new RemoteConnectionFactory();
         RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(prop.getProperty("protocol"));

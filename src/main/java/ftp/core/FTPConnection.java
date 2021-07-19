@@ -1,6 +1,7 @@
 package ftp.core;
 
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPFile;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -66,6 +67,27 @@ public class FTPConnection implements RemoteConnection {
             throw new FTPClientException(e);
         }
         return true;
+    }
+
+    @Override
+    public void getCurrentRemoteDirectory() throws FTPClientException {
+        try {
+            System.out.println(client.printWorkingDirectory());
+        } catch (IOException e) {
+            throw new FTPClientException(e);
+        }
+    }
+
+    @Override
+    public void listCurrentDirectory() throws FTPClientException {
+        try {
+            FTPFile[] ftpFiles = client.listFiles();
+            for (FTPFile file : ftpFiles) {
+                System.out.println(file.getName());
+            }
+        } catch (IOException e) {
+            throw new FTPClientException(e);
+        }
     }
 
     @Override
