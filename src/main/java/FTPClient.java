@@ -35,7 +35,7 @@ public class FTPClient {
         String userOption;
         boolean repeateProcess = true;
 
-        System.out.println("HostName:");
+        System.out.println("HostName: (Eg: 127.0.0.1 or www.yourServer.com)");
 //        String hostName = "127.0.0.1";
         String hostName = scan.nextLine();
         System.out.println("UserName:");
@@ -96,22 +96,18 @@ public class FTPClient {
 
                     case "7":
                         System.out.println("7. Create New Directory on Remote Server\n");
-                        boolean tryCreatingDirAgain = false;
+                        boolean tryCreatingDirAgain;
                         do{
-                            System.out.println("Enter Directory Name: ");
+                            tryCreatingDirAgain = false;
+                            System.out.println("Enter Directory Name: (relative path or absolute path)");
                             String dirName = scan.nextLine();
-                            if(!remoteConnection.checkDirectoryExists(dirName)){
-                                boolean newDirStatus = remoteConnection.createNewDirectory(dirName);
-                                if(newDirStatus) {
-                                    System.out.println("Directory created Successfully. \n");
-                                }
-                                else {
-                                    System.out.println("-- Error: could not create New Directory in remote server --");
-                                }
-                                tryCreatingDirAgain = false;
-                            } else {
-                                System.out.println("Directory name already exists.\n" +
-                                        "Do you want try again, using another name? (y/n)");
+                            boolean newDirStatus = remoteConnection.createNewDirectory(dirName);
+                            if(newDirStatus) {
+                                System.out.println("* Directory created Successfully. *\n");
+                            }
+                            else {
+                                System.out.println("-- Error: could not create New Directory in remote server --\n"+
+                                        "Do you want try creating Directory again ? (y/n)");
                                 String tryAgain = scan.nextLine();
                                 if(tryAgain.equals("y")){
                                     tryCreatingDirAgain = true;
