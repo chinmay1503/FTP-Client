@@ -67,10 +67,26 @@ public class FTP_ClientTest {
         RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(prop.getProperty("protocol"));
         boolean connected = remoteConnection.connect(prop.getProperty("hostname"), prop.getProperty("username"), prop.getProperty("password"));
         assertTrue(connected);
+
         String path = "/newTestDir";
         boolean result = remoteConnection.createNewDirectory(path);
         assertTrue(result);
         remoteConnection.deleteDirectory(path);
+    }
+
+    @Test
+    public void uploadSingleFileToRemoteTest() throws FTPClientException, IOException {
+        RemoteConnectionFactory remoteConnectionFactory = new RemoteConnectionFactory();
+        RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(prop.getProperty("protocol"));
+        boolean connected = remoteConnection.connect(prop.getProperty("hostname"), prop.getProperty("username"), prop.getProperty("password"));
+        assertTrue(connected);
+
+// commenting this before pushing code. because local file path is different for other team.
+
+//        String localPath = "D:\\Summer21\\agile sw developement\\Local Files\\test1.txt";
+//        String remotePath = "/upload123/test1.txt";
+//        boolean result = remoteConnection.uploadSingleFile(localPath, remotePath);
+//        assertTrue(result);
     }
 
 }
