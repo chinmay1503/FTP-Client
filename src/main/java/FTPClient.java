@@ -4,6 +4,7 @@ import ftp.core.RemoteConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.util.Scanner;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -92,7 +93,29 @@ public class FTPClient {
 
                     case "5":
                         System.out.println("5. Put file onto remote server\n");
-                        System.out.println("coming soon ... \n");
+                        System.out.println("Enter Local file path, that you want to upload");
+                        String localFilePath = scan.nextLine();
+                        File localFile = new File(localFilePath);
+                        String remoteFilePath;
+                        if(localFile.isFile()){
+                            System.out.println("Enter Remote file path where you want to upload");
+                            String remotePath = scan.nextLine();
+                            remoteFilePath = remotePath + "/" + localFile.getName();
+                            if(remoteConnection.checkDirectoryExists(remotePath)){
+                                System.out.println("yes remote path esists");
+                                boolean uploaded = remoteConnection.uploadSingleFile(localFilePath, remoteFilePath);
+                                if (uploaded) {
+                                    System.out.println("UPLOADED a file to: " + remoteFilePath );
+                                } else {
+                                    System.out.println("Error occurred when trying to upload the file: \""
+                                            + localFilePath + "\" to \"" + remoteFilePath + "\"");
+                                }
+                            } else {
+                                System.out.println("Error: The Remote file path provided does not exist.\n");
+                            }
+                        } else {
+                            System.out.println("Error: The local path provided is not valid.\n");
+                        }
                         break;
 
                     case "6":

@@ -5,6 +5,7 @@ import com.jcraft.jsch.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -73,6 +74,11 @@ public class SFTPConnection implements RemoteConnection {
         } catch (SftpException e) {
             throw new FTPClientException(e);
         }
+    }
+
+    @Override
+    public boolean uploadSingleFile(String localFilePath, String remoteFilePath) throws IOException {
+        return false;
     }
 
     @Override
