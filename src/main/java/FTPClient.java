@@ -5,7 +5,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
@@ -93,34 +96,40 @@ public class FTPClient {
 
                     case "5":
                         System.out.println("5. Put file onto remote server\n");
+
                         System.out.println("Enter Local file path, that you want to upload");
                         String localFilePath = scan.nextLine();
-                        File localFile = new File(localFilePath);
-                        String remoteFilePath;
-                        if(localFile.isFile()){
-                            System.out.println("Enter Remote file path where you want to upload");
-                            String remotePath = scan.nextLine();
-                            remoteFilePath = remotePath + "/" + localFile.getName();
-                            if(remoteConnection.checkDirectoryExists(remotePath)){
-                                System.out.println("yes remote path esists");
-                                boolean uploaded = remoteConnection.uploadSingleFile(localFilePath, remoteFilePath);
-                                if (uploaded) {
-                                    System.out.println("UPLOADED a file to: " + remoteFilePath );
-                                } else {
-                                    System.out.println("Error occurred when trying to upload the file: \""
-                                            + localFilePath + "\" to \"" + remoteFilePath + "\"");
-                                }
-                            } else {
-                                System.out.println("Error: The Remote file path provided does not exist.\n");
-                            }
-                        } else {
-                            System.out.println("Error: The local path provided is not valid.\n");
-                        }
+
+                        System.out.println("Enter Destination");
+                        String remotePath = scan.nextLine();
+
+                        remoteConnection.uploadSingleFile(localFilePath, remotePath);
+
                         break;
 
                     case "6":
                         System.out.println("6. Put multiple files on remote server\n");
-                        System.out.println("coming soon ... \n");
+
+                        System.out.println("Enter Destination");
+                        String remote_Path = scan.nextLine();
+
+                        Set uploadFilesSet = new HashSet<String>();
+                        boolean uploadMore;
+
+                        do{
+                            uploadMore = false;
+                            System.out.println("Enter Local file path, that you want to upload");
+                            String local_Path = scan.nextLine();
+
+                            uploadFilesSet.add(local_Path);
+
+                            System.out.println("Do you want to upload another File ? (y/n)");
+                            String uploadMoreFiles = scan.nextLine();
+                            if(uploadMoreFiles.equals("y")){
+                                uploadMore = true;
+                            }
+                        } while(uploadMore);
+                        remoteConnection.uploadMultipleFiles(Arrays.copyOf(uploadFilesSet.toArray(), uploadFilesSet.toArray().length, String[].class), remote_Path);
                         break;
 
                     case "7":
