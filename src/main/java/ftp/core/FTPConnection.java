@@ -3,7 +3,10 @@ package ftp.core;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.SocketException;
 
 
@@ -40,19 +43,18 @@ public class FTPConnection implements RemoteConnection {
         }
     }
 
-    public boolean createNewDirectory(String dirName) {
+    public boolean createNewDirectory(String dirName) throws IOException {
         try{
-            boolean val = client.makeDirectory(dirName);
-            return val;
-        } catch (IOException e) {
-            e.printStackTrace();
+            return client.makeDirectory(dirName);
+        } catch (SocketException e) {
+            System.out.println("Something went wrong, when trying to create directory \""+dirName+"\"\n" +
+                    "Give valid Directory path/ name .");
         }
         return false;
     }
 
     public int getClientReplyCode() {
-        int returnCode = client.getReplyCode();
-        return returnCode;
+        return client.getReplyCode();
     }
 
     @Override
@@ -97,5 +99,21 @@ public class FTPConnection implements RemoteConnection {
         } catch (IOException e) {
             throw new FTPClientException(e);
         }
+    }
+
+    @Override
+    public boolean uploadSingleFile(String localFilePath, String remoteFilePath) throws IOException {
+        File localFile = new File(localFilePath);
+
+        InputStream inputStream = new FileInputStream(localFile);
+        try {
+            client.setFileType(org.apache.commons.net.ftp.FTP.BINARY_FILE_TYPE);
+            return client.storeFile(remoteFilePath, inputStream);
+        } catch (IOException e) {
+            System.out.println("-- Something went wrong when trying to upload the file. --\n");
+        } finally {
+            inputStream.close();
+        }
+        return false;
     }
 }
