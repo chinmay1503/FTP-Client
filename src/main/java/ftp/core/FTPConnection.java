@@ -1,11 +1,9 @@
 package ftp.core;
 
 import org.apache.commons.net.ftp.FTPClient;
-
-import java.io.FileOutputStream;
+import org.apache.commons.net.ftp.FTPFile;
+import java.io.*;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.net.SocketException;
 
 
@@ -42,40 +40,93 @@ public class FTPConnection implements RemoteConnection {
         }
     }
 
-    public boolean createNewDirectory(String dirName) {
+    public boolean createNewDirectory(String dirName) throws IOException {
         try{
-            boolean val = client.makeDirectory(dirName);
-            return val;
-        } catch (IOException e) {
-            e.printStackTrace();
+            return client.makeDirectory(dirName);
+        } catch (SocketException e) {
+            System.out.println("Something went wrong, when trying to create directory \""+dirName+"\"\n" +
+                    "Give valid Directory path/ name .");
         }
         return false;
     }
 
-    public int getClientReplyCode() throws IOException{
-        int returnCode = client.getReplyCode();
-        return returnCode;
+    public int getClientReplyCode() {
+        return client.getReplyCode();
     }
 
-    public boolean checkDirectoryExists(String dirPath) throws IOException {
-        client.changeWorkingDirectory(dirPath);
-        int returnCode = client.getReplyCode();
-        if (returnCode == 550) {
-            return false;
+    public boolean getRemoteFile(String remoteDirName, String localPath) throws IOException {
+
+        File downloadToLocal = new File(localPath + "/" + remoteDirName);
+//        File downloadToLocal = new File("C:/Users/Minji/Documents/PSU 2020-2021/Summer/CS 410 MODERN " +
+//                "AGILE AND OTHER XP SOFT/Filezilla - Local Folder for testing" + "/" + remoteDirName);
+        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(downloadToLocal));
+
+        //returns true if file transfer was successful
+        boolean transferSuccess = client.retrieveFile(remoteDirName, outputStream);
+        outputStream.close();
+        return transferSuccess;
+
+    }
+
+    @Override
+    public boolean checkDirectoryExists(String dirPath) throws FTPClientException {
+        try {
+            client.changeWorkingDirectory(dirPath);
+            int returnCode = client.getReplyCode();
+            if (returnCode == 550) {
+                return false;
+            }
+        } catch (IOException e) {
+            throw new FTPClientException(e);
         }
         return true;
     }
 
-    public boolean getRemoteFile(String remoteDirName, String localPath) throws IOException {
-        FileOutputStream fileOut = new FileOutputStream(localPath);
-        ObjectOutputStream out = new ObjectOutputStream(fileOut);
-        getRemoteFile(remoteDirName, out);
-        return true;
+    @Override
+    public void getCurrentRemoteDirectory() throws FTPClientException {
+        try {
+            System.out.println(client.printWorkingDirectory());
+        } catch (IOException e) {
+            throw new FTPClientException(e);
+        }
     }
 
-    public boolean getRemoteFile(String remoteDirName, OutputStream localPath) throws IOException {
-        client.retrieveFile(remoteDirName, localPath);
-        return true;
+    @Override
+    public void listCurrentDirectory() throws FTPClientException {
+        try {
+            FTPFile[] ftpFiles = client.listFiles();
+            for (FTPFile file : ftpFiles) {
+                System.out.println(file.getName());
+            }
+        } catch (IOException e) {
+            throw new FTPClientException(e);
+        }
+    }
+
+    @Override
+    public boolean deleteDirectory(String dirPath) throws FTPClientException {
+        try {
+            return client.removeDirectory(dirPath);
+        } catch (IOException e) {
+            throw new FTPClientException(e);
+        }
+    }
+
+    @Override
+    public boolean uploadSingleFile(String localFilePath, String remoteFilePath) throws IOException {
+        File localFile = new File(localFilePath);
+
+        InputStream inputStream = new FileInputStream(localFile);
+        try {
+            client.setFileType(org.apache.commons.net.ftp.FTP.BINARY_FILE_TYPE);
+            return client.storeFile(remoteFilePath, inputStream);
+        } catch (IOException e) {
+            System.out.println("-- Something went wrong when trying to upload the file. --\n");
+        } finally {
+            inputStream.close();
+        }
+        return false;
+
     }
 }
 

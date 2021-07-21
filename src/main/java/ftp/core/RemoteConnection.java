@@ -9,14 +9,22 @@ public interface RemoteConnection {
 
     void disconnect() throws FTPClientException;
 
-    boolean createNewDirectory(String dirName) throws IOException;
+    boolean createNewDirectory(String dirName) throws FTPClientException, IOException;
 
-    int getClientReplyCode() throws IOException;
+    int getClientReplyCode() throws FTPClientException;
 
-    boolean checkDirectoryExists(String dirPath) throws IOException;
+    void getCurrentRemoteDirectory() throws FTPClientException;
+
+    void listCurrentDirectory() throws FTPClientException;
+
+    boolean checkDirectoryExists(String dirPath) throws FTPClientException;
+
+    boolean deleteDirectory(String dirPath) throws  FTPClientException;
+
+    boolean uploadSingleFile(String localFilePath, String remoteFilePath) throws IOException;
 
     boolean getRemoteFile(String remoteDirName, String localPath) throws IOException;
 
-    boolean getRemoteFile(String remoteDirName, OutputStream localPath) throws IOException;
+//    boolean getRemoteFile(String remoteDirName, OutputStream localPath) throws IOException;
 
 }

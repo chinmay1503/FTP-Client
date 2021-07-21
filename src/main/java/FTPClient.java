@@ -1,13 +1,17 @@
+import ftp.core.FTPClientException;
 import ftp.core.RemoteConnectionFactory;
 import ftp.core.RemoteConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.util.Scanner;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 public class FTPClient {
 
-    private static Logger logger = LogManager.getLogger(FTPClient.class);
+    private static final Logger logger = LogManager.getLogger(FTPClient.class);
 
     public static void showOptions(){
         System.out.println("Select from Following options (Enter option number).\n" +
@@ -36,15 +40,18 @@ public class FTPClient {
         String userInput;
         boolean repeateProcess = true;
 
-        System.out.println("HostName:");
-//        String hostName = "127.0.0.1";
+        System.out.println("HostName: (Eg: 127.0.0.1 or www.yourServer.com)");
         String hostName = scan.nextLine();
+        if (isNullOrEmpty(hostName))
+            hostName = "127.0.0.1";
         System.out.println("UserName:");
         String userName = scan.nextLine();
+        checkNullOrEmpty(userName, "userName");
         System.out.println("Password:");
         String password = scan.nextLine();
+        checkNullOrEmpty(userName, password);
         System.out.println("Select Protocol: 1. FTP \t 2. SFTP");
-        String protocol = "";
+        String protocol;
         String protocolNum = scan.nextLine();
         if(protocolNum.equals("1"))
             protocol = "FTP";
@@ -77,25 +84,28 @@ public class FTPClient {
                         boolean promptForRemoteFile = true;
 //                        boolean promptForLocalPath = true;
 
-                        // Prompt user for remote file to be downloaded
-                        do {
-                            System.out.println("Enter File Name to download from Remote Server: \n");
-                            remoteFileUserInput = scan.nextLine();
-                            if (!remoteConnection.checkDirectoryExists(remoteFileUserInput)) {
-                                System.out.println("-- Error: could not locate Directory with the name " + remoteFileUserInput +
-                                        " in remote server --");
-                                System.out.println("Enter File Name to download from Remote Server: \n");
-                            }
-                            else {
-                                promptForRemoteFile = false;
-                            }
-                        } while(promptForRemoteFile);
+                        //NEEDS TO CHECK IF FILE EXISTS, NOT IF DIRECTORY EXISTS
+                        //FOR ISSUE#2, GET FILE FROM REMOTE
 
-                        // Prompt user for local absolute path
-                        // Unsure how to verify user's absolute path. No re-prompting
+                        // Prompt user for remote file to be downloaded
+//                        do {
+//                            System.out.println("Enter File Name to download from Remote Server: \n");
+//                            remoteFileUserInput = scan.nextLine();
+//
+//                            if (!remoteConnection.checkDirectoryExists(remoteFileUserInput)) {
+//                                System.out.println("-- Error: could not locate Directory with the name " + remoteFileUserInput +
+//                                        " in remote server --");
+//                                System.out.println("Enter File Name to download from Remote Server: \n");
+//                            }
+//                            else {
+//                                promptForRemoteFile = false;
+//                            }
+//                        } while(promptForRemoteFile);
+
+                        System.out.println("Enter File Name to download from Remote Server: \n");
+                        remoteFileUserInput = scan.nextLine();
                         System.out.println("Enter File Path to download to: \n");
                         localPathUserInput = scan.nextLine();
-
 
                         remoteConnection.getRemoteFile(remoteFileUserInput, localPathUserInput);
 
@@ -113,7 +123,29 @@ public class FTPClient {
 
                     case "5":
                         System.out.println("5. Put file onto remote server\n");
-                        System.out.println("coming soon ... \n");
+                        System.out.println("Enter Local file path, that you want to upload");
+                        String localFilePath = scan.nextLine();
+                        File localFile = new File(localFilePath);
+                        String remoteFilePath;
+                        if(localFile.isFile()){
+                            System.out.println("Enter Remote file path where you want to upload");
+                            String remotePath = scan.nextLine();
+                            remoteFilePath = remotePath + "/" + localFile.getName();
+                            if(remoteConnection.checkDirectoryExists(remotePath)){
+                                System.out.println("yes remote path esists");
+                                boolean uploaded = remoteConnection.uploadSingleFile(localFilePath, remoteFilePath);
+                                if (uploaded) {
+                                    System.out.println("UPLOADED a file to: " + remoteFilePath );
+                                } else {
+                                    System.out.println("Error occurred when trying to upload the file: \""
+                                            + localFilePath + "\" to \"" + remoteFilePath + "\"");
+                                }
+                            } else {
+                                System.out.println("Error: The Remote file path provided does not exist.\n");
+                            }
+                        } else {
+                            System.out.println("Error: The local path provided is not valid.\n");
+                        }
                         break;
 
                     case "6":
@@ -123,22 +155,18 @@ public class FTPClient {
 
                     case "7":
                         System.out.println("7. Create New Directory on Remote Server\n");
-                        boolean tryCreatingDirAgain = false;
+                        boolean tryCreatingDirAgain;
                         do{
-                            System.out.println("Enter Directory Name: ");
+                            tryCreatingDirAgain = false;
+                            System.out.println("Enter Directory Name: (relative path or absolute path)");
                             String dirName = scan.nextLine();
-                            if(!remoteConnection.checkDirectoryExists(dirName)){
-                                boolean newDirStatus = remoteConnection.createNewDirectory(dirName);
-                                if(newDirStatus) {
-                                    System.out.println("Directory created Successfully. \n");
-                                }
-                                else {
-                                    System.out.println("-- Error: could not create New Directory in remote server --");
-                                }
-                                tryCreatingDirAgain = false;
-                            } else {
-                                System.out.println("Directory name already exists.\n" +
-                                        "Do you want try again, using another name? (y/n)");
+                            boolean newDirStatus = remoteConnection.createNewDirectory(dirName);
+                            if(newDirStatus) {
+                                System.out.println("* Directory created Successfully. *\n");
+                            }
+                            else {
+                                System.out.println("-- Error: could not create New Directory in remote server --\n"+
+                                        "Directory may already exist. Do you want try creating Directory again ? (y/n)");
                                 String tryAgain = scan.nextLine();
                                 if(tryAgain.equals("y")){
                                     tryCreatingDirAgain = true;
@@ -149,7 +177,14 @@ public class FTPClient {
 
                     case "8":
                         System.out.println("8. Delete directories from remote server\n");
-                        System.out.println("coming soon ... \n");
+                        System.out.print("Please enter the path to the remote directory you would like to delete: ");
+                        String path = scan.nextLine();
+                        if(remoteConnection.deleteDirectory(path)) {
+                            System.out.println("Directory deleted Successfully. \n");
+                        }
+                        else {
+                            System.out.println("-- Error: could not delete New Directory in remote server --");
+                        }
                         break;
 
                     case "14":
@@ -172,5 +207,10 @@ public class FTPClient {
             logger.info("Provide HostName, UserName, Password and select Protocol, when prompted.");
         }
         logger.debug("Main Method Execution -> Ends");
+    }
+
+    public static void checkNullOrEmpty(String input, String fieldName) throws FTPClientException {
+        if (isNullOrEmpty(input))
+            throw new FTPClientException(String.format("Field [%s] is mandatory", fieldName));
     }
 }
