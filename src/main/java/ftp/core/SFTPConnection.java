@@ -77,8 +77,13 @@ public class SFTPConnection implements RemoteConnection {
     }
 
     @Override
-    public boolean uploadSingleFile(String localFilePath, String remoteFilePath) throws IOException {
-        return false;
+    public void uploadSingleFile(String localFilePath, String remoteFilePath) throws IOException {
+
+    }
+
+    @Override
+    public void uploadMultipleFiles(String[] localPaths, String remotePath) {
+
     }
 
     @Override

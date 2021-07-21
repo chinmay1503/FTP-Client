@@ -21,10 +21,10 @@ public interface RemoteConnection {
 
     boolean deleteDirectory(String dirPath) throws  FTPClientException;
 
-    boolean uploadSingleFile(String localFilePath, String remoteFilePath) throws IOException;
+    void uploadSingleFile(String localFilePath, String remoteFilePath) throws IOException, FTPClientException;
+
+    void uploadMultipleFiles(String[] localPaths, String remotePath);
 
     boolean getRemoteFile(String remoteDirName, String localPath) throws IOException;
-
-//    boolean getRemoteFile(String remoteDirName, OutputStream localPath) throws IOException;
 
 }
