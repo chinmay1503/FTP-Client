@@ -20,6 +20,8 @@ public interface RemoteConnection {
 
     boolean deleteDirectory(String dirPath) throws  FTPClientException;
 
-    boolean uploadSingleFile(String localFilePath, String remoteFilePath) throws IOException;
+    void uploadSingleFile(String localFilePath, String remoteFilePath) throws IOException, FTPClientException;
+
+    void uploadMultipleFiles(String[] localPaths, String remotePath);
 
 }

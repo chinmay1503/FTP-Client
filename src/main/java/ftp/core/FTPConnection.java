@@ -102,18 +102,46 @@ public class FTPConnection implements RemoteConnection {
     }
 
     @Override
-    public boolean uploadSingleFile(String localFilePath, String remoteFilePath) throws IOException {
-        File localFile = new File(localFilePath);
+    public void uploadSingleFile(String localFilePath, String remotePath) throws IOException, FTPClientException {
+        boolean uploaded = false;
+        String remoteFilePath;
 
-        InputStream inputStream = new FileInputStream(localFile);
-        try {
-            client.setFileType(org.apache.commons.net.ftp.FTP.BINARY_FILE_TYPE);
-            return client.storeFile(remoteFilePath, inputStream);
-        } catch (IOException e) {
-            System.out.println("-- Something went wrong when trying to upload the file. --\n");
-        } finally {
-            inputStream.close();
+        File localFile = new File(localFilePath);
+        if(localFile.isFile()){
+            remoteFilePath = remotePath + "/" + localFile.getName();
+            if(checkDirectoryExists(remotePath)){
+                InputStream inputStream = new FileInputStream(localFile);
+                try {
+                    client.setFileType(org.apache.commons.net.ftp.FTP.BINARY_FILE_TYPE);
+                    uploaded = client.storeFile(remoteFilePath, inputStream);
+                } catch (IOException e) {
+                    System.out.println("-- Something went wrong when trying to upload the file. --\n");
+                } finally {
+                    inputStream.close();
+                }
+            if (uploaded) {
+                System.out.println("UPLOADED a file to: " + remoteFilePath );
+            } else {
+                System.out.println("Error occurred when trying to upload the file: \""
+                            + localFilePath + "\" to \"" + remoteFilePath + "\"");
+            }
+        } else {
+                System.out.println("Error: The Remote file path provided does not exist.\n");
+            }
+        } else {
+            System.out.println("Error: The local path provided is not valid.\n");
         }
-        return false;
+    }
+
+    @Override
+    public void uploadMultipleFiles(String[] localPaths, String remotePath){
+        System.out.println("local paths --> "+ localPaths);
+        try {
+            for (String localPath : localPaths) {
+                uploadSingleFile(localPath, remotePath);
+            }
+        } catch (IOException | FTPClientException e) {
+            System.out.println("-- Error while uploading files to Remote server --");
+        }
     }
 }
