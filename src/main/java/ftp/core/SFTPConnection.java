@@ -5,6 +5,7 @@ import com.jcraft.jsch.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Vector;
@@ -17,6 +18,7 @@ public class SFTPConnection implements RemoteConnection {
     private static ChannelSftp sftpChannel;
     private static Session session = null;
 
+    @Override
     public boolean connect(String hostName, String userName, String password) throws FTPClientException {
         try {
             session = jsch.getSession(userName, hostName, 22);
@@ -34,6 +36,7 @@ public class SFTPConnection implements RemoteConnection {
         return false;
     }
 
+    @Override
     public void disconnect() {
         sftpChannel.disconnect();
         session.disconnect();
@@ -97,13 +100,27 @@ public class SFTPConnection implements RemoteConnection {
     }
 
     @Override
+    public boolean checkFileExists(String fileName) throws FTPClientException {
+        return false;
+    }
+
+    @Override
+    public boolean checkLocalDirectoryExists(String dirPath) throws FileNotFoundException {
+        return false;
+    }
+
+    @Override
     public boolean checkDirectoryExists(String dirPath) throws FTPClientException {
         return false;
     }
 
     @Override
-    public boolean getRemoteFile(String remoteDirName, String localPath) throws IOException {
+    public boolean downloadSingleFile(String remotePath, String localPath) throws IOException {
         return false;
     }
 
+    @Override
+    public boolean downloadMultipleFiles(String[] localPaths, String remotePath) throws IOException {
+        return false;
+    }
 }

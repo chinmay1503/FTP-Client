@@ -84,33 +84,30 @@ public class FTPClient {
                         System.out.println("2. Get file from remote server\n");
                         String remoteFileUserInput;
                         String localPathUserInput;
-                        boolean promptForRemoteFile = true;
-//                        boolean promptForLocalPath = true;
-
-                        //NEEDS TO CHECK IF FILE EXISTS, NOT IF DIRECTORY EXISTS
-                        //FOR ISSUE#2, GET FILE FROM REMOTE
+                        boolean promptForRemoteFile;
+                        boolean promptForLocalPath;
 
                         // Prompt user for remote file to be downloaded
-//                        do {
-//                            System.out.println("Enter File Name to download from Remote Server: \n");
-//                            remoteFileUserInput = scan.nextLine();
-//
-//                            if (!remoteConnection.checkDirectoryExists(remoteFileUserInput)) {
-//                                System.out.println("-- Error: could not locate Directory with the name " + remoteFileUserInput +
-//                                        " in remote server --");
-//                                System.out.println("Enter File Name to download from Remote Server: \n");
-//                            }
-//                            else {
-//                                promptForRemoteFile = false;
-//                            }
-//                        } while(promptForRemoteFile);
+                        do {
+                            System.out.println("Enter File Name to download from Remote Server: \n");
+                            remoteFileUserInput = scan.nextLine();
+                            promptForRemoteFile = remoteConnection.checkFileExists(remoteFileUserInput);
+                            if(!promptForRemoteFile) {
+                                System.out.println("-- Error: could not locate Directory with the name " + remoteFileUserInput +
+                                        " in remote server --");
+                            }
+                        } while(!promptForRemoteFile);
 
-                        System.out.println("Enter File Name to download from Remote Server: \n");
-                        remoteFileUserInput = scan.nextLine();
-                        System.out.println("Enter File Path to download to: \n");
-                        localPathUserInput = scan.nextLine();
-
-                        remoteConnection.getRemoteFile(remoteFileUserInput, localPathUserInput);
+                        do {
+                            System.out.println("Enter File Path to download to: \n");
+                            localPathUserInput = scan.nextLine();
+                            promptForLocalPath = remoteConnection.checkLocalDirectoryExists(localPathUserInput);
+                            if(!promptForLocalPath) {
+                                System.out.println("-- Error: could not locate Directory with the name " + localPathUserInput +
+                                        " in local computer --");
+                            }
+                        } while(!promptForLocalPath);
+                        remoteConnection.downloadSingleFile(remoteFileUserInput, localPathUserInput);
 
                         break;
 

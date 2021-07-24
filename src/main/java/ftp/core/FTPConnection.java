@@ -1,10 +1,15 @@
 package ftp.core;
 
+import com.jcraft.jsch.IO;
+import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 
 import java.io.*;
 import java.net.SocketException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 
 public class FTPConnection implements RemoteConnection {
@@ -58,21 +63,58 @@ public class FTPConnection implements RemoteConnection {
         return client.getReplyCode();
     }
 
+    //download a single file from remote server to local
     @Override
-    public boolean getRemoteFile(String remoteDirName, String localPath) throws IOException{
+    public boolean downloadSingleFile(String localPath, String remotePath) throws IOException{
         OutputStream outputStream = null;
         try {
-            File downloadToLocal = new File(localPath + "/" + remoteDirName);
+            File downloadToLocal = new File(localPath + "/" + remotePath);
             outputStream = new BufferedOutputStream(new FileOutputStream(downloadToLocal));
 
             //returns true if file transfer was successful
-            boolean transferSuccess = client.retrieveFile(remoteDirName, outputStream);
+            boolean transferSuccess = client.retrieveFile(remotePath, outputStream);
             return transferSuccess;
         } finally {
             if(outputStream != null) {
                 outputStream.close();
             }
         }
+    }
+
+    //download a single file from remote server to local
+    @Override
+    public boolean downloadMultipleFiles(String[] localPaths, String remotePath) throws IOException {
+        System.out.println("Not implemented yet. Coming soon...");
+        return false;
+    }
+
+    //Check if file exists in remote directory
+    @Override
+    public boolean checkFileExists(String fileName) throws FTPClientException {
+        try {
+            InputStream inputStream = client.retrieveFileStream(client.printWorkingDirectory() + "/" + fileName);
+            int isFile = client.getReplyCode();
+            if(inputStream == null || isFile == 550) {
+                inputStream.close();
+                return false;
+            }
+        } catch (IOException e) {
+            throw new FTPClientException(e);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean checkLocalDirectoryExists(String dirPath) throws FileNotFoundException {
+//        try {
+//            File localPath = new File(dirPath);
+//            if(localPath.exists())
+//                return true;
+//        } finally {
+//            return false;
+//        }
+        Path path = Paths.get(dirPath);
+        return Files.exists(path);
     }
 
     @Override
