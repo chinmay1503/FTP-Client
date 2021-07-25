@@ -93,6 +93,15 @@ public class FTPConnection implements RemoteConnection {
     }
 
     @Override
+    public boolean deleteFile(String filePath) throws FTPClientException {
+        try {
+            return client.deleteFile(filePath);
+        } catch (IOException e) {
+            throw new FTPClientException(e);
+        }
+    }
+
+    @Override
     public boolean deleteDirectory(String dirPath) throws FTPClientException {
         try {
             return client.removeDirectory(dirPath);
