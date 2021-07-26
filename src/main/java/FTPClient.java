@@ -3,6 +3,10 @@ import ftp.core.RemoteConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.*;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Scanner;
@@ -71,7 +75,9 @@ public class FTPClient {
                     switch (userOption) {
                         case "1":
                             System.out.println("1. list directories & files on remote server\n");
-                            System.out.println("coming soon ... \n");
+                            readFile("test.txt");
+                            createFile();
+                            writeFile();
                             break;
 
                         case "2":
@@ -204,5 +210,56 @@ public class FTPClient {
     public static void checkNullOrEmpty(String input, String fieldName) {
         if (isNullOrEmpty(input))
             System.out.println((String.format("Field [%s] is mandatory", fieldName)));
+    }
+
+    public static void readFile(String fileName) {
+//        File file = new File(FTPClient.class.getResource(fileName).getPath());
+//        System.out.println("file = " + file);
+//        try {
+//            Scanner scanner = new Scanner(file);
+//            while(scanner.hasNextLine()){
+//                System.out.println(scanner.nextLine());
+//            }
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+        try (InputStream readme = FTPClient.class.getResourceAsStream("test.txt")) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(readme));
+            String line;
+            //String line = reader.readLine();
+            //System.out.println(line);
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch (IOException e) {
+            System.err.println(e);
+        }
+
+    }
+
+    public static void createFile() {
+        try {
+            File myObj = new File("target\\classes\\filename.txt");
+            if (myObj.createNewFile()) {
+                System.out.println("File created: " + myObj.getName());
+            } else {
+                System.out.println("File already exists.");
+            }
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+    }
+
+    public static void writeFile() {
+        try {
+            FileWriter myWriter = new FileWriter("target\\classes\\filename.txt");
+            myWriter.write("Files in Java might be tricky, but it is fun enough!");
+            myWriter.close();
+            System.out.println("Successfully wrote to the file.");
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
     }
 }
