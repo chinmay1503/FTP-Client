@@ -91,6 +91,13 @@ public class FTPClient {
                                 for(ClientCredentials cc : clients){
                                     System.out.println(cc.getUserName() +" -- "+ cc.getPassword() +" -- "+ cc.getProtocol() +" -- "+ cc.getServer());
                                 }
+                                ClientCredentials clic = new ClientCredentials();
+                                clic.setUserName("Minjin");
+                                clic.setPassword("qwerty");
+                                clic.setProtocol("FTP");
+                                clic.setServer("127.0.0.1");
+                                mapper.writeValue(new File("target\\classes\\text.json"), clic);
+                                inputStream.close();
                             } catch (FileNotFoundException e){
                                 e.printStackTrace();
                             }
