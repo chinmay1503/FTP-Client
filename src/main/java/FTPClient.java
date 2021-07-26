@@ -1,5 +1,6 @@
 import ftp.core.RemoteConnectionFactory;
 import ftp.core.RemoteConnection;
+//import jdk.internal.access.JavaSecurityAccess;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -7,15 +8,13 @@ import java.io.*;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 public class FTPClient {
 
+    public static Hashtable<Integer, String> ht1 = new Hashtable<>();
     private static final Logger logger = LogManager.getLogger(FTPClient.class);
 
     public static void showOptions(){
@@ -38,6 +37,9 @@ public class FTPClient {
     }
 
     public static void main(String[] args) throws Exception {
+//        Hashtable<Integer, String> ht1 = new Hashtable<>();
+
+
         logger.debug("Main method Execution -> Starts");
 
         try (Scanner scan = new Scanner(System.in)) {
@@ -75,6 +77,10 @@ public class FTPClient {
                     switch (userOption) {
                         case "1":
                             System.out.println("1. list directories & files on remote server\n");
+                            ht1.put(1, "one");
+                            ht1.put(2, "two");
+                            ht1.put(3, "three");
+                            System.out.println("Mappings of ht1 : " + ht1);
                             readFile("test.txt");
                             createFile();
                             writeFile();
@@ -254,7 +260,7 @@ public class FTPClient {
     public static void writeFile() {
         try {
             FileWriter myWriter = new FileWriter("target\\classes\\filename.txt");
-            myWriter.write("Files in Java might be tricky, but it is fun enough!");
+            myWriter.write(String.valueOf(ht1));
             myWriter.close();
             System.out.println("Successfully wrote to the file.");
         } catch (IOException e) {
