@@ -1,0 +1,14 @@
+[
+  {
+    "userName": "vandana",
+    "password": "agile",
+    "server": "127.0.0.1",
+    "protocol": "FTP"
+  },
+  {
+    "userName": "chinmay",
+    "password": "agile",
+    "server": "127.0.0.1",
+    "protocol": "FTP"
+  }
+]

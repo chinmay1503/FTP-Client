@@ -1,9 +1,12 @@
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ftp.core.RemoteConnectionFactory;
 import ftp.core.RemoteConnection;
 //import jdk.internal.access.JavaSecurityAccess;
+//import jdk.internal.org.objectweb.asm.TypeReference;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import  ftp.core.ClientCredentials;
 import java.io.*;
 import java.net.URI;
 import java.nio.file.Files;
@@ -15,6 +18,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 public class FTPClient {
 
     public static Hashtable<Integer, String> ht1 = new Hashtable<>();
+    public static Hashtable<Integer, String> ht2;
     private static final Logger logger = LogManager.getLogger(FTPClient.class);
 
     public static void showOptions(){
@@ -77,13 +81,30 @@ public class FTPClient {
                     switch (userOption) {
                         case "1":
                             System.out.println("1. list directories & files on remote server\n");
-                            ht1.put(1, "one");
-                            ht1.put(2, "two");
-                            ht1.put(3, "three");
-                            System.out.println("Mappings of ht1 : " + ht1);
-                            readFile("test.txt");
-                            createFile();
-                            writeFile();
+                            try{
+                                ObjectMapper mapper = new ObjectMapper();
+                                InputStream inputStream = new FileInputStream(new File("target\\classes\\text.json"));
+//                                TypeReference<List<ClientCredentials>> typeReference = new TypeReference<List<ClientCredentials>>(){};
+                                JavaType type = mapper.getTypeFactory().
+                                        constructCollectionType(List.class, ClientCredentials.class);
+                                List<ClientCredentials> clients = mapper.readValue(inputStream, type);
+                                for(ClientCredentials cc : clients){
+                                    System.out.println(cc.getUserName() +" -- "+ cc.getPassword() +" -- "+ cc.getProtocol() +" -- "+ cc.getServer());
+                                }
+                            } catch (FileNotFoundException e){
+                                e.printStackTrace();
+                            }
+
+
+
+//                            ht1.put(1, "one");
+//                            ht1.put(2, "two");
+//                            ht1.put(3, "three");
+//                            System.out.println("Mappings of ht1 : " + ht1);
+////                            readFile("test.txt");
+//                            createFile();
+//                            writeFile();
+//                            readFile("filename.txt");
                             break;
 
                         case "2":
@@ -229,14 +250,17 @@ public class FTPClient {
 //        } catch (FileNotFoundException e) {
 //            e.printStackTrace();
 //        }
-        try (InputStream readme = FTPClient.class.getResourceAsStream("test.txt")) {
+        System.out.println("filename.txt file data\n");
+        try (InputStream readme = FTPClient.class.getResourceAsStream(fileName)) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(readme));
             String line;
             //String line = reader.readLine();
             //System.out.println(line);
             while ((line = reader.readLine()) != null) {
                 System.out.println(line);
+//                ht2 = new Hashtable<Integer, String>(Integer.parseInt(line));
             }
+//            System.out.println("ht2 ---> "+ht2);
         } catch (IOException e) {
             System.err.println(e);
         }
@@ -260,7 +284,7 @@ public class FTPClient {
     public static void writeFile() {
         try {
             FileWriter myWriter = new FileWriter("target\\classes\\filename.txt");
-            myWriter.write(String.valueOf(ht1));
+            myWriter.write(ht1.toString());
             myWriter.close();
             System.out.println("Successfully wrote to the file.");
         } catch (IOException e) {
