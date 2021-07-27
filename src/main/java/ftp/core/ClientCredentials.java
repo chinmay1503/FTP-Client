@@ -16,7 +16,6 @@ public class ClientCredentials {
     public ClientCredentials() {
     }
 
-
     public String getUserName() {
         return userName;
     }

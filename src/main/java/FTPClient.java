@@ -1,4 +1,6 @@
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import ftp.core.RemoteConnectionFactory;
@@ -51,7 +53,7 @@ public class FTPClient {
             String userOption;
             boolean repeatProcess = true;
 
-            System.out.println("HostName: (Eg: 127.0.0.1 or www.yourServer.com)");
+            System.out.println("HostName: (Eg: 127.0.0.1)");
             String hostName = scan.nextLine();
             if (isNullOrEmpty(hostName))
                 hostName = "127.0.0.1";
@@ -70,8 +72,9 @@ public class FTPClient {
             RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(protocol);
 
             boolean connected = remoteConnection.connect(hostName, userName, password);
-            if (connected) {
 
+            if (connected) {
+                storeClientCredentials(hostName, userName, password, protocol);
                 System.out.println("\n--- Connected to Remote FTP Server ---\n");
                 showOptions();
 
@@ -82,46 +85,7 @@ public class FTPClient {
                     switch (userOption) {
                         case "1":
                             System.out.println("1. list directories & files on remote server\n");
-                            try{
-                                ObjectMapper mapper = new ObjectMapper();
-                                InputStream inputStream = new FileInputStream(new File("target\\classes\\text.json"));
-//                                TypeReference<List<ClientCredentials>> typeReference = new TypeReference<List<ClientCredentials>>(){};
-                                JavaType type = mapper.getTypeFactory().
-                                        constructCollectionType(List.class, ClientCredentials.class);
-                                List<ClientCredentials> clients = mapper.readValue(inputStream, type); // [obj, obj]
-                                System.out.println("mapper.readvalue = " + clients);
-                                for(ClientCredentials cc : clients){
-                                    System.out.println("cc = " + cc);
-                                    System.out.println(cc.getUserName() +" -- "+ cc.getPassword() +" -- "+ cc.getProtocol() +" -- "+ cc.getServer());
-                                }
-                                ClientCredentials clic = new ClientCredentials();
-                                clic.setUserName("Minjin");
-                                clic.setPassword("qwerty");
-                                clic.setProtocol("FTP");
-                                clic.setServer("127.0.0.1");
-                                clients.add(clic);
-                                mapper.writeValue(new File("target\\classes\\text.json"), clients);
-                                System.out.println("cli = "+ clic);
-//                                File file = new File("target\\classes\\text.json");
-//                                FileWriter fileWriter = new FileWriter(file, true);
-//
-//                                SequenceWriter seqWriter = mapper.writer().writeValuesAsArray(fileWriter);
-//                                seqWriter.write(clic);
-                                inputStream.close();
-                            } catch (FileNotFoundException e){
-                                e.printStackTrace();
-                            }
-
-
-
-//                            ht1.put(1, "one");
-//                            ht1.put(2, "two");
-//                            ht1.put(3, "three");
-//                            System.out.println("Mappings of ht1 : " + ht1);
-////                            readFile("test.txt");
-//                            createFile();
-//                            writeFile();
-//                            readFile("filename.txt");
+                            System.out.println("Coming Soon...");
                             break;
 
                         case "2":
@@ -239,6 +203,43 @@ public class FTPClient {
             }
             logger.debug("Main Method Execution -> Ends");
         }
+    }
+
+    private static void storeClientCredentials(String hostName, String userName, String password, String protocol) {
+        boolean newClient = isNewClient(userName);
+        if(newClient){
+            try{
+                ObjectMapper mapper = new ObjectMapper();
+                InputStream inputStream = new FileInputStream(new File("target\\classes\\text.json"));
+                JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, ClientCredentials.class);
+                List<ClientCredentials> allClients = mapper.readValue(inputStream, type); // [obj, obj]
+
+                ClientCredentials newClientData = new ClientCredentials( userName, password, hostName, protocol);
+                allClients.add(newClientData);
+                mapper.writeValue(new File("target\\classes\\text.json"), allClients);
+
+                inputStream.close();
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static boolean isNewClient(String userName) {
+        try{
+            ObjectMapper mapper = new ObjectMapper();
+            InputStream inputStream = new FileInputStream(new File("target\\classes\\text.json"));
+            JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, ClientCredentials.class);
+            List<ClientCredentials> clients = mapper.readValue(inputStream, type); // [obj, obj]
+            for(ClientCredentials cc : clients){
+                if(cc.getUserName().equals(userName)){
+                    return false;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return true;
     }
 
     private static String getInputFromUser(Scanner scan, String inputMsg, String fieldName) {
