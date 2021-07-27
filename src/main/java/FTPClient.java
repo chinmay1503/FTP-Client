@@ -44,8 +44,6 @@ public class FTPClient {
     }
 
     public static void main(String[] args) throws Exception {
-//        Hashtable<Integer, String> ht1 = new Hashtable<>();
-
 
         logger.debug("Main method Execution -> Starts");
 
@@ -210,13 +208,13 @@ public class FTPClient {
         if(newClient){
             try{
                 ObjectMapper mapper = new ObjectMapper();
-                InputStream inputStream = new FileInputStream(new File("target\\classes\\text.json"));
+                InputStream inputStream = new FileInputStream(new File("target\\classes\\clientCredentials.json"));
                 JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, ClientCredentials.class);
                 List<ClientCredentials> allClients = mapper.readValue(inputStream, type); // [obj, obj]
 
                 ClientCredentials newClientData = new ClientCredentials( userName, password, hostName, protocol);
                 allClients.add(newClientData);
-                mapper.writeValue(new File("target\\classes\\text.json"), allClients);
+                mapper.writeValue(new File("target\\classes\\clientCredentials.json"), allClients);
 
                 inputStream.close();
             } catch (IOException e){
@@ -228,7 +226,7 @@ public class FTPClient {
     private static boolean isNewClient(String userName) {
         try{
             ObjectMapper mapper = new ObjectMapper();
-            InputStream inputStream = new FileInputStream(new File("target\\classes\\text.json"));
+            InputStream inputStream = new FileInputStream(new File("target\\classes\\clientCredentials.json"));
             JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, ClientCredentials.class);
             List<ClientCredentials> clients = mapper.readValue(inputStream, type); // [obj, obj]
             for(ClientCredentials cc : clients){
@@ -257,57 +255,4 @@ public class FTPClient {
             System.out.println((String.format("Field [%s] is mandatory", fieldName)));
     }
 
-    public static void readFile(String fileName) {
-//        File file = new File(FTPClient.class.getResource(fileName).getPath());
-//        System.out.println("file = " + file);
-//        try {
-//            Scanner scanner = new Scanner(file);
-//            while(scanner.hasNextLine()){
-//                System.out.println(scanner.nextLine());
-//            }
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        }
-        System.out.println("filename.txt file data\n");
-        try (InputStream readme = FTPClient.class.getResourceAsStream(fileName)) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(readme));
-            String line;
-            //String line = reader.readLine();
-            //System.out.println(line);
-            while ((line = reader.readLine()) != null) {
-                System.out.println(line);
-//                ht2 = new Hashtable<Integer, String>(Integer.parseInt(line));
-            }
-//            System.out.println("ht2 ---> "+ht2);
-        } catch (IOException e) {
-            System.err.println(e);
-        }
-
-    }
-
-    public static void createFile() {
-        try {
-            File myObj = new File("target\\classes\\filename.txt");
-            if (myObj.createNewFile()) {
-                System.out.println("File created: " + myObj.getName());
-            } else {
-                System.out.println("File already exists.");
-            }
-        } catch (IOException e) {
-            System.out.println("An error occurred.");
-            e.printStackTrace();
-        }
-    }
-
-    public static void writeFile() {
-        try {
-            FileWriter myWriter = new FileWriter("target\\classes\\filename.txt");
-            myWriter.write(ht1.toString());
-            myWriter.close();
-            System.out.println("Successfully wrote to the file.");
-        } catch (IOException e) {
-            System.out.println("An error occurred.");
-            e.printStackTrace();
-        }
-    }
 }
