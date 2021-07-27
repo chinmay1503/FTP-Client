@@ -6,6 +6,17 @@ public class ClientCredentials {
     String server;
     String protocol;
 
+    public ClientCredentials(String userName, String password, String server, String protocol) {
+        this.userName = userName;
+        this.password = password;
+        this.server = server;
+        this.protocol = protocol;
+    }
+
+    public ClientCredentials() {
+    }
+
+
     public String getUserName() {
         return userName;
     }

@@ -1,5 +1,6 @@
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SequenceWriter;
 import ftp.core.RemoteConnectionFactory;
 import ftp.core.RemoteConnection;
 //import jdk.internal.access.JavaSecurityAccess;
@@ -87,8 +88,10 @@ public class FTPClient {
 //                                TypeReference<List<ClientCredentials>> typeReference = new TypeReference<List<ClientCredentials>>(){};
                                 JavaType type = mapper.getTypeFactory().
                                         constructCollectionType(List.class, ClientCredentials.class);
-                                List<ClientCredentials> clients = mapper.readValue(inputStream, type);
+                                List<ClientCredentials> clients = mapper.readValue(inputStream, type); // [obj, obj]
+                                System.out.println("mapper.readvalue = " + clients);
                                 for(ClientCredentials cc : clients){
+                                    System.out.println("cc = " + cc);
                                     System.out.println(cc.getUserName() +" -- "+ cc.getPassword() +" -- "+ cc.getProtocol() +" -- "+ cc.getServer());
                                 }
                                 ClientCredentials clic = new ClientCredentials();
@@ -96,7 +99,14 @@ public class FTPClient {
                                 clic.setPassword("qwerty");
                                 clic.setProtocol("FTP");
                                 clic.setServer("127.0.0.1");
-                                mapper.writeValue(new File("target\\classes\\text.json"), clic);
+                                clients.add(clic);
+                                mapper.writeValue(new File("target\\classes\\text.json"), clients);
+                                System.out.println("cli = "+ clic);
+//                                File file = new File("target\\classes\\text.json");
+//                                FileWriter fileWriter = new FileWriter(file, true);
+//
+//                                SequenceWriter seqWriter = mapper.writer().writeValuesAsArray(fileWriter);
+//                                seqWriter.write(clic);
                                 inputStream.close();
                             } catch (FileNotFoundException e){
                                 e.printStackTrace();
