@@ -1,17 +1,27 @@
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SequenceWriter;
 import ftp.core.RemoteConnectionFactory;
 import ftp.core.RemoteConnection;
+//import jdk.internal.access.JavaSecurityAccess;
+//import jdk.internal.org.objectweb.asm.TypeReference;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Scanner;
-import java.util.Set;
+import  ftp.core.ClientCredentials;
+import java.io.*;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 public class FTPClient {
 
+    public static Hashtable<Integer, String> ht1 = new Hashtable<>();
+    public static Hashtable<Integer, String> ht2;
     private static final Logger logger = LogManager.getLogger(FTPClient.class);
 
     public static void showOptions(){
@@ -34,13 +44,14 @@ public class FTPClient {
     }
 
     public static void main(String[] args) throws Exception {
+
         logger.debug("Main method Execution -> Starts");
 
         try (Scanner scan = new Scanner(System.in)) {
             String userOption;
             boolean repeatProcess = true;
 
-            System.out.println("HostName: (Eg: 127.0.0.1 or www.yourServer.com)");
+            System.out.println("HostName: (Eg: 127.0.0.1)");
             String hostName = scan.nextLine();
             if (isNullOrEmpty(hostName))
                 hostName = "127.0.0.1";
@@ -59,8 +70,9 @@ public class FTPClient {
             RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(protocol);
 
             boolean connected = remoteConnection.connect(hostName, userName, password);
-            if (connected) {
 
+            if (connected) {
+                storeClientCredentials(hostName, userName, password, protocol);
                 System.out.println("\n--- Connected to Remote FTP Server ---\n");
                 showOptions();
 
@@ -71,7 +83,7 @@ public class FTPClient {
                     switch (userOption) {
                         case "1":
                             System.out.println("1. list directories & files on remote server\n");
-                            System.out.println("coming soon ... \n");
+                            System.out.println("Coming Soon...");
                             break;
 
                         case "2":
@@ -191,6 +203,43 @@ public class FTPClient {
         }
     }
 
+    private static void storeClientCredentials(String hostName, String userName, String password, String protocol) {
+        boolean newClient = isNewClient(userName);
+        if(newClient){
+            try{
+                ObjectMapper mapper = new ObjectMapper();
+                InputStream inputStream = new FileInputStream(new File("target\\classes\\clientCredentials.json"));
+                JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, ClientCredentials.class);
+                List<ClientCredentials> allClients = mapper.readValue(inputStream, type); // [obj, obj]
+
+                ClientCredentials newClientData = new ClientCredentials( userName, password, hostName, protocol);
+                allClients.add(newClientData);
+                mapper.writeValue(new File("target\\classes\\clientCredentials.json"), allClients);
+
+                inputStream.close();
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static boolean isNewClient(String userName) {
+        try{
+            ObjectMapper mapper = new ObjectMapper();
+            InputStream inputStream = new FileInputStream(new File("target\\classes\\clientCredentials.json"));
+            JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, ClientCredentials.class);
+            List<ClientCredentials> clients = mapper.readValue(inputStream, type); // [obj, obj]
+            for(ClientCredentials cc : clients){
+                if(cc.getUserName().equals(userName)){
+                    return false;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
     private static String getInputFromUser(Scanner scan, String inputMsg, String fieldName) {
         String inputString;
         do {
@@ -205,4 +254,5 @@ public class FTPClient {
         if (isNullOrEmpty(input))
             System.out.println((String.format("Field [%s] is mandatory", fieldName)));
     }
+
 }
