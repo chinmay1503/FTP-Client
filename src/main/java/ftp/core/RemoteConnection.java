@@ -18,7 +18,7 @@ public interface RemoteConnection {
 
     void listCurrentDirectory() throws FTPClientException;
 
-    boolean checkFileExists(String fileName) throws FTPClientException;
+    boolean checkFileExists(String filePath) throws FTPClientException, IOException;
 
     boolean checkLocalDirectoryExists(String dirPath) throws FileNotFoundException;
 

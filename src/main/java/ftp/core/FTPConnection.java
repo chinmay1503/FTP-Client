@@ -68,10 +68,22 @@ public class FTPConnection implements RemoteConnection {
     public boolean downloadSingleFile(String localPath, String remotePath) throws IOException{
         OutputStream outputStream = null;
         try {
-            File downloadToLocal = new File(localPath + "/" + remotePath);
+            String fileName = getFileNameFromRemote(remotePath);
+//            localPath = localPath.replaceAll("\\\\", "/");
+            File downloadToLocal = new File(localPath + "\\" + fileName);
             outputStream = new BufferedOutputStream(new FileOutputStream(downloadToLocal));
 
+            OutputStream outputStream2 = new BufferedOutputStream(new FileOutputStream(downloadToLocal));
+            InputStream inputStream = client.retrieveFileStream(remotePath);
+            byte[] bytesArray = new byte[4096];
+            int bytesRead = -1;
+            while ((bytesRead = inputStream.read(bytesArray)) != -1) {
+                outputStream2.write(bytesArray, 0, bytesRead);
+            }
+
+
             //returns true if file transfer was successful
+//            String path = "/test_file4_bread.txt";
             boolean transferSuccess = client.retrieveFile(remotePath, outputStream);
             return transferSuccess;
         } finally {
@@ -79,6 +91,8 @@ public class FTPConnection implements RemoteConnection {
                 outputStream.close();
             }
         }
+
+
     }
 
     //download a single file from remote server to local
@@ -88,18 +102,29 @@ public class FTPConnection implements RemoteConnection {
         return false;
     }
 
+    //Parse file name from filepath
+    public String getFileNameFromRemote(String filePath) throws IOException {
+        File file = null;
+        file = new File(filePath);
+        String fileName = file.getAbsolutePath().substring(file.getAbsolutePath().lastIndexOf("\\")+1);
+
+        return fileName;
+    }
+
     //Check if file exists in remote directory
     @Override
-    public boolean checkFileExists(String fileName) throws FTPClientException {
+    public boolean checkFileExists(String filePath) throws IOException {
+        InputStream inputStream = null;
         try {
-            InputStream inputStream = client.retrieveFileStream(client.printWorkingDirectory() + "/" + fileName);
+//            inputStream = client.retrieveFileStream(filePath);
             int isFile = client.getReplyCode();
             if(inputStream == null || isFile == 550) {
-                inputStream.close();
                 return false;
             }
-        } catch (IOException e) {
-            throw new FTPClientException(e);
+        } finally {
+            if(inputStream != null) {
+                inputStream.close();
+            }
         }
         return true;
     }

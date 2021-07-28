@@ -100,7 +100,7 @@ public class SFTPConnection implements RemoteConnection {
     }
 
     @Override
-    public boolean checkFileExists(String fileName) throws FTPClientException {
+    public boolean checkFileExists(String filePath) throws FTPClientException {
         return false;
     }
 
