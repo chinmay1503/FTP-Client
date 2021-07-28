@@ -5,10 +5,13 @@ import com.jcraft.jsch.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Vector;
+
+import static ftp.core.FTPUtils.getFileNameFromRemote;
 
 public class SFTPConnection implements RemoteConnection {
 
@@ -95,11 +98,6 @@ public class SFTPConnection implements RemoteConnection {
     }
 
     @Override
-    public int getClientReplyCode() throws FTPClientException {
-        return 0;
-    }
-
-    @Override
     public boolean checkFileExists(String filePath) throws FTPClientException {
         return false;
     }
@@ -115,8 +113,16 @@ public class SFTPConnection implements RemoteConnection {
     }
 
     @Override
-    public boolean downloadSingleFile(String remotePath, String localPath) throws IOException {
-        return false;
+    public boolean downloadSingleFile(String remotePath, String localPath) throws IOException, FTPClientException {
+        try {
+            String fileName = getFileNameFromRemote(remotePath);
+            String outputLocation = localPath + File.separator + fileName;
+            sftpChannel.get(remotePath, outputLocation);
+            logger.info("Downloading file : [" + fileName + "] from remote location");
+            return true;
+        } catch (SftpException e) {
+            throw new FTPClientException(e);
+        }
     }
 
     @Override

@@ -12,8 +12,6 @@ public interface RemoteConnection {
 
     boolean createNewDirectory(String dirName) throws FTPClientException, IOException;
 
-    int getClientReplyCode() throws FTPClientException;
-
     void getCurrentRemoteDirectory() throws FTPClientException;
 
     void listCurrentDirectory() throws FTPClientException;
@@ -30,7 +28,7 @@ public interface RemoteConnection {
 
     void uploadMultipleFiles(String[] localPaths, String remotePath);
 
-    boolean downloadSingleFile(String localPath, String remotePath) throws IOException;
+    boolean downloadSingleFile(String localPath, String remotePath) throws IOException, FTPClientException;
 
     boolean downloadMultipleFiles(String[] localPaths, String remotePath) throws IOException;
 

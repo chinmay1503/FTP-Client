@@ -91,8 +91,7 @@ public class FTPClient {
                         do {
                             System.out.println("Enter File Name to download from Remote Server: \n");
                             remoteFileUserInput = scan.nextLine();
-//                            promptForRemoteFile = remoteConnection.checkFileExists(remoteFileUserInput);
-                            promptForRemoteFile = true;
+                            promptForRemoteFile = remoteConnection.checkFileExists(remoteFileUserInput);
                             if(!promptForRemoteFile) {
                                 System.out.println("-- Error: could not locate Directory with the name " + remoteFileUserInput +
                                         " in remote server --");

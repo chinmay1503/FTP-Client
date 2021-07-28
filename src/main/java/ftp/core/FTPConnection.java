@@ -11,6 +11,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static ftp.core.FTPUtils.getFileNameFromRemote;
+
 
 public class FTPConnection implements RemoteConnection {
 
@@ -58,86 +60,38 @@ public class FTPConnection implements RemoteConnection {
         return false;
     }
 
-    @Override
-    public int getClientReplyCode() {
-        return client.getReplyCode();
-    }
-
     //download a single file from remote server to local
     @Override
-    public boolean downloadSingleFile(String localPath, String remotePath) throws IOException{
+    public boolean downloadSingleFile(String localPath, String remotePath) throws IOException, FTPClientException {
         OutputStream outputStream = null;
         try {
             String fileName = getFileNameFromRemote(remotePath);
-//            localPath = localPath.replaceAll("\\\\", "/");
-            File downloadToLocal = new File(localPath + "\\" + fileName);
+            File downloadToLocal = new File(localPath + File.separator + fileName);
             outputStream = new BufferedOutputStream(new FileOutputStream(downloadToLocal));
-
-            OutputStream outputStream2 = new BufferedOutputStream(new FileOutputStream(downloadToLocal));
-            InputStream inputStream = client.retrieveFileStream(remotePath);
-            byte[] bytesArray = new byte[4096];
-            int bytesRead = -1;
-            while ((bytesRead = inputStream.read(bytesArray)) != -1) {
-                outputStream2.write(bytesArray, 0, bytesRead);
-            }
-
-
-            //returns true if file transfer was successful
-//            String path = "/test_file4_bread.txt";
-            boolean transferSuccess = client.retrieveFile(remotePath, outputStream);
-            return transferSuccess;
+            return client.retrieveFile(remotePath, outputStream);
         } finally {
             if(outputStream != null) {
                 outputStream.close();
             }
         }
-
-
     }
 
     //download a single file from remote server to local
     @Override
-    public boolean downloadMultipleFiles(String[] localPaths, String remotePath) throws IOException {
+    public boolean downloadMultipleFiles(String[] remotePaths, String localPath) throws IOException {
         System.out.println("Not implemented yet. Coming soon...");
         return false;
-    }
-
-    //Parse file name from filepath
-    public String getFileNameFromRemote(String filePath) throws IOException {
-        File file = null;
-        file = new File(filePath);
-        String fileName = file.getAbsolutePath().substring(file.getAbsolutePath().lastIndexOf("\\")+1);
-
-        return fileName;
     }
 
     //Check if file exists in remote directory
     @Override
     public boolean checkFileExists(String filePath) throws IOException {
-        InputStream inputStream = null;
-        try {
-//            inputStream = client.retrieveFileStream(filePath);
-            int isFile = client.getReplyCode();
-            if(inputStream == null || isFile == 550) {
-                return false;
-            }
-        } finally {
-            if(inputStream != null) {
-                inputStream.close();
-            }
-        }
-        return true;
+        FTPFile[] remoteFile = client.listFiles(filePath);
+        return remoteFile.length > 0;
     }
 
     @Override
-    public boolean checkLocalDirectoryExists(String dirPath) throws FileNotFoundException {
-//        try {
-//            File localPath = new File(dirPath);
-//            if(localPath.exists())
-//                return true;
-//        } finally {
-//            return false;
-//        }
+    public boolean checkLocalDirectoryExists(String dirPath) {
         Path path = Paths.get(dirPath);
         return Files.exists(path);
     }
