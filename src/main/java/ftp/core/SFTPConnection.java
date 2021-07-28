@@ -69,13 +69,24 @@ public class SFTPConnection implements RemoteConnection {
         }
     }
 
+    @Override
+    public boolean deleteFile(String filePath) throws FTPClientException {
+        try {
+            logger.debug("Going to delete file :[" + filePath + "]");
+            sftpChannel.rm(filePath);
+            logger.debug("File deleted successfully.");
+            return true;
+        } catch (SftpException e) {
+            throw new FTPClientException(e);
+        }
+    }
 
     @Override
     public boolean deleteDirectory(String dirPath) throws FTPClientException {
         try {
-            logger.debug("Going to delete file :[" + dirPath + "]");
+            logger.debug("Going to delete Directory :[" + dirPath + "]");
             sftpChannel.rmdir(dirPath);
-            logger.debug("File deleted successfully.");
+            logger.debug("Directory deleted successfully.");
             return true;
         } catch (SftpException e) {
             throw new FTPClientException(e);
