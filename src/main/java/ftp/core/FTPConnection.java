@@ -28,7 +28,7 @@ public class FTPConnection implements RemoteConnection {
                 client.enterLocalPassiveMode();
                 client.setFileType(org.apache.commons.net.ftp.FTP.BINARY_FILE_TYPE);
             } else {
-                System.err.println("Username or password is incorrect");
+                System.err.println("Given User Credentials are incorrect");
             }
             return login;
         } catch (SocketException e) {

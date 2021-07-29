@@ -48,6 +48,11 @@ public class FTPClient {
      *          This method can throw many Exception's. so mentioning parent Exception.
      */
     public static void main(String[] args) throws Exception {
+        String hostName = "";
+        String protocol = "";
+        String userName = "";
+        String password = "";
+        boolean repeatConnectOptions = false;
 
         logger.debug("Main method Execution -> Starts");
 
@@ -55,24 +60,57 @@ public class FTPClient {
             String userOption;
             boolean repeatProcess = true;
 
-            System.out.println("HostName: (Eg: 127.0.0.1)");
-            String hostName = scan.nextLine();
-            if (isNullOrEmpty(hostName))
-                hostName = "127.0.0.1";
-            String userName = getInputFromUser(scan, "UserName", "UserName");
-            String password = getInputFromUser(scan, "Password", "Password");
+            System.out.println("How do you want to connect to remote server ?\n");
+            String connectOptions = getInputFromUser(scan, "1. Use saved Connections \t 2. Enter New user Credentials and Save them\nEnter your Option", "connectOptions");
+            do {
+                switch (connectOptions) {
+                    case "1":
+                        System.out.println("List of all saved connections (Choose from below connections):\n");
+                        ArrayList<String> selectedUserDetails = listAllUserCredentials();
+                        if (selectedUserDetails.isEmpty()) {
+                            connectOptions = "2";
+                            repeatConnectOptions = true;
+                        } else {
+                            userName = selectedUserDetails.get(0);
+                            password = selectedUserDetails.get(1);
+                            hostName = selectedUserDetails.get(2);
+                            protocol = selectedUserDetails.get(3);
+                        }
+                        break;
 
-            System.out.println("Select Protocol: 1. FTP \t 2. SFTP");
-            String protocol;
-            String protocolNum = scan.nextLine();
-            if (protocolNum.equals("1"))
-                protocol = "FTP";
-            else
-                protocol = "SFTP";
+                    case "2":
+                        System.out.println("HostName: (Eg: 127.0.0.1)");
+                        hostName = scan.nextLine();
+                        if (isNullOrEmpty(hostName))
+                            hostName = "127.0.0.1";
 
+                        userName = getInputFromUser(scan, "UserName", "UserName");
+                        password = getInputFromUser(scan, "Password", "Password");
+
+                        String protocolNum = getInputFromUser(scan, "Select Protocol: 1. FTP \t 2. SFTP", "protocolNum");
+                        if (protocolNum.equals("1"))
+                            protocol = "FTP";
+                        else
+                            protocol = "SFTP";
+
+                        repeatConnectOptions = false;
+
+                        break;
+
+                    default:
+                        connectOptions = getInputFromUser(scan,
+                                "please enter Correct option, choose form following.\n"
+                                        + "1. Use saved Connections \t 2. Enter New user Credentials and Save them\n"
+                                        + "Enter your Option",
+                                "connectOptions");
+                        repeatConnectOptions = true;
+                        break;
+                }
+            }while (repeatConnectOptions);
+
+            System.out.println("Connecting to Remote Server...");
             RemoteConnectionFactory remoteConnectionFactory = new RemoteConnectionFactory();
             RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(protocol);
-
             boolean connected = remoteConnection.connect(hostName, userName, password);
 
             if (connected) {
@@ -223,6 +261,40 @@ public class FTPClient {
             }
             logger.debug("Main Method Execution -> Ends");
         }
+    }
+
+    private static ArrayList<String> listAllUserCredentials() {
+        ArrayList<ArrayList<String> > aList =
+                new ArrayList<>();
+        int userIndex = 0;
+        int i = 1;
+        try{
+            ObjectMapper mapper = new ObjectMapper();
+            InputStream inputStream = new FileInputStream(new File("target\\classes\\clientCredentials.json"));
+            JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, ClientCredentials.class);
+            List<ClientCredentials> allClients = mapper.readValue(inputStream, type); // [obj, obj]
+
+            for(ClientCredentials cc : allClients){
+                ArrayList<String> a1 = new ArrayList<>();
+                a1.add(cc.getUserName());
+                a1.add(cc.getPassword());
+                a1.add(cc.getServer());
+                a1.add(cc.getProtocol());
+                aList.add(a1);
+                System.out.println(i + ". userName: " + cc.getUserName() + "\tserver: " + cc.getServer() + "\tProtocol: " + cc.getProtocol());
+                i = i + 1;
+            }
+            System.out.println(i + ". None of the above. Enter New Credentials");
+            Scanner scan = new Scanner(System.in);
+            userIndex = Integer.parseInt(getInputFromUser(scan, "\nEnter Option", "userIndex"));
+            inputStream.close();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+        if(userIndex == i){
+            return new ArrayList<>();
+        }
+        return aList.get(userIndex - 1);
     }
 
     /**
