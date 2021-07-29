@@ -111,10 +111,8 @@ public class FTPClient {
 
                             System.out.println("5. Put file onto remote server\n");
 
-                            System.out.println("Enter Local file path, that you want to upload");
-                            String localFilePath = scan.nextLine();
-                            System.out.println("Enter Destination");
-                            String remotePath = scan.nextLine();
+                            String localFilePath = getInputFromUser(scan, "Enter Local file path, that you want to upload", "localFilePath");
+                            String remotePath = getInputFromUser(scan, "Enter Destination", "remotePath");
                             remoteConnection.uploadSingleFile(localFilePath, remotePath);
 
                             logger.debug("End of functionality - Put file onto remote server");
@@ -125,21 +123,31 @@ public class FTPClient {
 
                             System.out.println("6. Put multiple files on remote server\n");
 
-                            System.out.println("Enter Destination");
-                            String remote_Path = scan.nextLine();
+                            String remote_Path = getInputFromUser(scan, "Enter Destination", "remote_Path");
 
                             Set uploadFilesSet = new HashSet<String>();
                             boolean uploadMore;
+                            boolean isValidPath = true;
+                            String uploadMoreFiles = "n";
 
                             do {
                                 uploadMore = false;
-                                System.out.println("Enter Local file path, that you want to upload");
-                                String local_Path = scan.nextLine();
 
-                                uploadFilesSet.add(local_Path);
+                                String local_Path = getInputFromUser(scan, "Enter Local file path, that you want to upload", "local_Path");
+                                File localFile = new File(local_Path);
+                                if(localFile.isFile()) {
+                                    uploadFilesSet.add(local_Path);
+                                    isValidPath = true;
+                                }else {
+                                    System.out.println("Error: The local path provided is not valid.\n");
+                                    isValidPath = false;
+                                }
+                                if(isValidPath) {
+                                    uploadMoreFiles = getInputFromUser(scan, "Do you want to upload another File ? (y/n)", "uploadMoreFiles");
+                                } else {
+                                    uploadMoreFiles = getInputFromUser(scan, "Try again? (y/n)", "uploadMoreFiles");
+                                }
 
-                                System.out.println("Do you want to upload another File ? (y/n)");
-                                String uploadMoreFiles = scan.nextLine();
                                 if (uploadMoreFiles.equals("y")) {
                                     uploadMore = true;
                                 }
@@ -156,17 +164,15 @@ public class FTPClient {
                             boolean tryCreatingDirAgain;
                             do {
                                 tryCreatingDirAgain = false;
-                                System.out.println("Enter Directory Name: (relative path or absolute path)");
-                                String dirName = scan.nextLine();
+                                String dirName = getInputFromUser(scan, "Enter Directory Name: (relative path or absolute path)", "dirName");
                                 boolean newDirStatus = remoteConnection.createNewDirectory(dirName);
                                 if (newDirStatus) {
                                     logger.info("Directory created Successfully");
                                     System.out.println("* Directory created Successfully. *\n");
                                 } else {
                                     logger.info("Error occurred - could not create New Directory in remote server");
-                                    System.out.println("-- Error: could not create New Directory in remote server --\n" +
-                                            "Directory may already exist. Do you want try creating Directory again ? (y/n)");
-                                    String tryAgain = scan.nextLine();
+                                    System.out.println("-- Error: could not create New Directory in remote server --\n");
+                                    String tryAgain = getInputFromUser(scan, "Directory may already exist. Do you want try creating Directory again ? (y/n)", "tryAgain");
                                     if (tryAgain.equals("y")) {
                                         tryCreatingDirAgain = true;
                                     }

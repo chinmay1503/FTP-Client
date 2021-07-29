@@ -158,7 +158,7 @@ public class FTPConnection implements RemoteConnection {
                 }
             if (uploaded) {
                 logger.info("file upload successful");
-                System.out.println("UPLOADED a file to: " + remoteFilePath );
+                System.out.println("Upload Successful. Uploaded to: " + remoteFilePath );
             } else {
                 logger.info("file upload Unsuccessful");
                 System.out.println("Error occurred when trying to upload the file: \""
