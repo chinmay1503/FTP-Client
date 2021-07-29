@@ -70,8 +70,7 @@ public class FTPClient {
 
                     switch (userOption) {
                         case "1":
-                            System.out.println("1. list directories & files on remote server\n");
-                            System.out.println("coming soon ... \n");
+                            remoteConnection.listCurrentDirectory();
                             break;
 
                         case "2":
@@ -156,6 +155,25 @@ public class FTPClient {
                             } else {
                                 System.out.println("-- Error: could not delete New Directory in remote server --");
                             }
+                            break;
+
+                        case "10":
+                            System.out.println("10. Rename file on remote server\n");
+                            String oldName = getInputFromUser(scan, "Enter name of file to rename", "oldName");
+                            String newName = getInputFromUser(scan, "Enter new name", "newName");
+                            boolean success = remoteConnection.renameRemoteFile(oldName, newName);
+                            if (success) {
+                                System.out.println(oldName + " was renamed to: " + newName);
+                            } else {
+                                System.out.println("Failed to rename: " + oldName);
+                            }
+                            break;
+
+                        case "12":
+                            System.out.println("12. Copy directories on remote server\n");
+                            String toCopy = getInputFromUser(scan,"Enter name of directory to copy", "toCopy");
+                            String newDir = getInputFromUser(scan, "Enter name of new copy", "newDir");
+                            remoteConnection.copyDirectory(toCopy, newDir);
                             break;
 
                         case "13":

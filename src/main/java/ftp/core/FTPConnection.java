@@ -1,5 +1,7 @@
 package ftp.core;
 
+import com.jcraft.jsch.IO;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 
@@ -153,4 +155,30 @@ public class FTPConnection implements RemoteConnection {
             System.out.println("-- Error while uploading files to Remote server --");
         }
     }
+
+    @Override
+    public boolean renameRemoteFile(String oldName, String newName) throws FTPClientException {
+        try {
+            return client.rename(oldName, newName);
+        } catch (IOException e) {
+            throw new FTPClientException(e);
+        }
+    }
+
+    @Override
+    public boolean copyDirectory(String toCopy, String newDir) throws FTPClientException {
+        try {
+            FTPFile[] ftpFiles = client.listFiles();
+            for (FTPFile file : ftpFiles) {
+                if (toCopy.equals(file.getName()) && file.isDirectory()) {
+
+
+                }
+            }
+            return false;
+        } catch (IOException e) {
+                throw new FTPClientException(e);
+        }
+    }
 }
+

@@ -111,4 +111,18 @@ public class SFTPConnection implements RemoteConnection {
     public boolean checkDirectoryExists(String dirPath) throws FTPClientException {
         return false;
     }
+    @Override
+    public boolean renameRemoteFile(String oldName, String newName) throws FTPClientException {
+        try {
+            sftpChannel.rename(oldName, newName);
+            return true;
+        } catch (SftpException e) {
+            throw new FTPClientException(e);
+        }
+    }
+
+    @Override
+    public boolean copyDirectory(String toCopy, String newDir) throws FTPClientException {
+        return false;
+    }
 }
