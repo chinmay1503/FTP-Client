@@ -37,7 +37,11 @@ public class FTP_ClientTest {
     public void printPresentWorkingDirectory() throws FTPClientException {
         RemoteConnectionFactory remoteConnectionFactory = new RemoteConnectionFactory();
         RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(prop.getProperty("protocol"));
-        boolean connected = remoteConnection.connect(prop.getProperty("hostname"), prop.getProperty("username"), prop.getProperty("password"));
+        boolean connected = false;
+        int connection_status = remoteConnection.connect(prop.getProperty("hostname"), prop.getProperty("username"), prop.getProperty("password"));
+        if(connection_status == 1){
+            connected = true;
+        }
         assertTrue(connected);
         remoteConnection.getCurrentRemoteDirectory();
     }
@@ -46,7 +50,11 @@ public class FTP_ClientTest {
     public void listFilePresentInCurrentRemoteDirectory() throws FTPClientException {
         RemoteConnectionFactory remoteConnectionFactory = new RemoteConnectionFactory();
         RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(prop.getProperty("protocol"));
-        boolean connected = remoteConnection.connect(prop.getProperty("hostname"), prop.getProperty("username"), prop.getProperty("password"));
+        boolean connected = false;
+        int connection_status = remoteConnection.connect(prop.getProperty("hostname"), prop.getProperty("username"), prop.getProperty("password"));
+        if(connection_status == 1){
+            connected = true;
+        }
         assertTrue(connected);
         remoteConnection.listCurrentDirectory();
     }
@@ -55,7 +63,11 @@ public class FTP_ClientTest {
     public void deleteDirectoryFTPTest() throws FTPClientException, IOException {
         RemoteConnectionFactory remoteConnectionFactory = new RemoteConnectionFactory();
         RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(prop.getProperty("protocol"));
-        boolean connected = remoteConnection.connect(prop.getProperty("hostname"), prop.getProperty("username"), prop.getProperty("password"));
+        boolean connected = false;
+        int connection_status = remoteConnection.connect(prop.getProperty("hostname"), prop.getProperty("username"), prop.getProperty("password"));
+        if(connection_status == 1){
+            connected = true;
+        }
         assertTrue(connected);
         String path = "/Test";
         remoteConnection.createNewDirectory(path);
@@ -67,7 +79,11 @@ public class FTP_ClientTest {
     public void makeNewDirectoryTest() throws FTPClientException, IOException {
         RemoteConnectionFactory remoteConnectionFactory = new RemoteConnectionFactory();
         RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(prop.getProperty("protocol"));
-        boolean connected = remoteConnection.connect(prop.getProperty("hostname"), prop.getProperty("username"), prop.getProperty("password"));
+        boolean connected = false;
+        int connection_status = remoteConnection.connect(prop.getProperty("hostname"), prop.getProperty("username"), prop.getProperty("password"));
+        if(connection_status == 1){
+            connected = true;
+        }
         assertTrue(connected);
 
         String path = "/newTestDir";
@@ -81,7 +97,11 @@ public class FTP_ClientTest {
     public void uploadSingleFileToRemoteMustNotRaiseErrorTest() throws FTPClientException {
         RemoteConnectionFactory remoteConnectionFactory = new RemoteConnectionFactory();
         RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(prop.getProperty("protocol"));
-        boolean connected = remoteConnection.connect(prop.getProperty("hostname"), prop.getProperty("username"), prop.getProperty("password"));
+        boolean connected = false;
+        int connection_status = remoteConnection.connect(prop.getProperty("hostname"), prop.getProperty("username"), prop.getProperty("password"));
+        if(connection_status == 1){
+            connected = true;
+        }
         assertTrue(connected);
 
         String localPath = "D:\\Summer21\\agile sw developement\\Local Files\\test1.txt";

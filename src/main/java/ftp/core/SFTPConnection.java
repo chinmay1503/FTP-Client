@@ -17,7 +17,7 @@ public class SFTPConnection implements RemoteConnection {
     private static ChannelSftp sftpChannel;
     private static Session session = null;
 
-    public boolean connect(String hostName, String userName, String password) throws FTPClientException {
+    public int connect(String hostName, String userName, String password) throws FTPClientException {
         try {
             session = jsch.getSession(userName, hostName, 22);
             java.util.Properties config = new java.util.Properties();
@@ -31,7 +31,7 @@ public class SFTPConnection implements RemoteConnection {
         } catch (JSchException e) {
             throw new FTPClientException(e);
         }
-        return false;
+        return 2;
     }
 
     public void disconnect() {

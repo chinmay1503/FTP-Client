@@ -19,7 +19,7 @@ public class FTPConnection implements RemoteConnection {
     private FTPClient client;
     private static final Logger logger = LogManager.getLogger(FTPClient.class);
 
-    public boolean connect(String hostName, String userName, String password) {
+    public int connect(String hostName, String userName, String password) {
         try {
             client = new FTPClient();
             client.connect(hostName, 21);
@@ -27,16 +27,19 @@ public class FTPConnection implements RemoteConnection {
             if (login) {
                 client.enterLocalPassiveMode();
                 client.setFileType(org.apache.commons.net.ftp.FTP.BINARY_FILE_TYPE);
+                return 1;
             } else {
                 System.err.println("Given User Credentials are incorrect");
+                return 0;
             }
-            return login;
+//            return login;
         } catch (SocketException e) {
             System.err.println("Error occurred when trying to connect to Server");
         } catch (IOException e) {
             System.err.println("Error due to IOException");
         }
-        return false;
+//        return false;
+        return 2;
     }
 
     public void disconnect() throws FTPClientException {

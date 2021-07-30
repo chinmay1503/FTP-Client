@@ -18,6 +18,10 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 public class FTPClient {
 
     private static final Logger logger = LogManager.getLogger(FTPClient.class);
+    private static String hostName = "";
+    private static String protocol = "";
+    private static String userName = "";
+    private static String password = "";
 
     /**
      * This method is used to print the options for user's to choose from.
@@ -41,6 +45,68 @@ public class FTPClient {
                 "\n" );
     }
 
+    public static void showConnectionOptions(String promptDialog){
+        boolean repeatConnectOptions = false;
+        Scanner scan = new Scanner(System.in);
+        logger.debug("Prompting the user to select connect options.");
+
+        System.out.println(promptDialog+"\n");
+        String connectOptions = getInputFromUser(scan, "1. Use saved Connections \t"
+                + " 2. Enter New user Credentials and Save them \t"
+                + " 3. Exit\n"
+                + "Enter your Option", "connectOptions");
+        do {
+            switch (connectOptions) {
+                case "1":
+                    System.out.println("List of all saved connections (Choose from below connections):\n");
+                    ArrayList<String> selectedUserDetails = listAllUserCredentials();
+                    if (selectedUserDetails.isEmpty()) {
+                        connectOptions = "2";
+                        repeatConnectOptions = true;
+                    } else {
+                        userName = selectedUserDetails.get(0);
+                        hostName = selectedUserDetails.get(2);
+                        protocol = selectedUserDetails.get(3);
+                        System.out.println("Connecting to:\nUserName: " + userName + "\tserver: " + hostName + "\tProtocol: " + protocol);
+                        password = getInputFromUser(scan, "Password", "Password");
+                    }
+                    break;
+
+                case "2":
+                    System.out.println("HostName: (Eg: 127.0.0.1)");
+                    hostName = scan.nextLine();
+                    if (isNullOrEmpty(hostName))
+                        hostName = "127.0.0.1";
+
+                    userName = getInputFromUser(scan, "UserName", "UserName");
+                    password = getInputFromUser(scan, "Password", "Password");
+
+                    String protocolNum = getInputFromUser(scan, "Select Protocol: 1. FTP \t 2. SFTP", "protocolNum");
+                    if (protocolNum.equals("1"))
+                        protocol = "FTP";
+                    else
+                        protocol = "SFTP";
+
+                    repeatConnectOptions = false;
+                    break;
+
+                case "3":
+                    System.exit(0);
+                    break;
+
+                default:
+                    connectOptions = getInputFromUser(scan,
+                            "please enter Correct option, choose form following.\n"
+                                    + "1. Use saved Connections \t 2. Enter New user Credentials and Save them\n"
+                                    + "Enter your Option",
+                            "connectOptions");
+                    repeatConnectOptions = true;
+                    break;
+            }
+        }while (repeatConnectOptions);
+
+    }
+
     /**
      * Main method for FTPClient class.
      *
@@ -48,70 +114,34 @@ public class FTPClient {
      *          This method can throw many Exception's. so mentioning parent Exception.
      */
     public static void main(String[] args) throws Exception {
-        String hostName = "";
-        String protocol = "";
-        String userName = "";
-        String password = "";
-        boolean repeatConnectOptions = false;
+
+        String userOption;
+        boolean repeatProcess = true;
+        boolean connected = false;
+        int connected_status = 0;
 
         logger.debug("Main method Execution -> Starts");
 
         try (Scanner scan = new Scanner(System.in)) {
-            String userOption;
-            boolean repeatProcess = true;
 
-            System.out.println("How do you want to connect to remote server ?\n");
-            String connectOptions = getInputFromUser(scan, "1. Use saved Connections \t 2. Enter New user Credentials and Save them\nEnter your Option", "connectOptions");
-            do {
-                switch (connectOptions) {
-                    case "1":
-                        System.out.println("List of all saved connections (Choose from below connections):\n");
-                        ArrayList<String> selectedUserDetails = listAllUserCredentials();
-                        if (selectedUserDetails.isEmpty()) {
-                            connectOptions = "2";
-                            repeatConnectOptions = true;
-                        } else {
-                            userName = selectedUserDetails.get(0);
-                            password = selectedUserDetails.get(1);
-                            hostName = selectedUserDetails.get(2);
-                            protocol = selectedUserDetails.get(3);
-                        }
-                        break;
-
-                    case "2":
-                        System.out.println("HostName: (Eg: 127.0.0.1)");
-                        hostName = scan.nextLine();
-                        if (isNullOrEmpty(hostName))
-                            hostName = "127.0.0.1";
-
-                        userName = getInputFromUser(scan, "UserName", "UserName");
-                        password = getInputFromUser(scan, "Password", "Password");
-
-                        String protocolNum = getInputFromUser(scan, "Select Protocol: 1. FTP \t 2. SFTP", "protocolNum");
-                        if (protocolNum.equals("1"))
-                            protocol = "FTP";
-                        else
-                            protocol = "SFTP";
-
-                        repeatConnectOptions = false;
-
-                        break;
-
-                    default:
-                        connectOptions = getInputFromUser(scan,
-                                "please enter Correct option, choose form following.\n"
-                                        + "1. Use saved Connections \t 2. Enter New user Credentials and Save them\n"
-                                        + "Enter your Option",
-                                "connectOptions");
-                        repeatConnectOptions = true;
-                        break;
-                }
-            }while (repeatConnectOptions);
+            showConnectionOptions("How do you want to connect to remote server ?");
 
             System.out.println("Connecting to Remote Server...");
             RemoteConnectionFactory remoteConnectionFactory = new RemoteConnectionFactory();
             RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(protocol);
-            boolean connected = remoteConnection.connect(hostName, userName, password);
+            do{
+                connected_status = remoteConnection.connect(hostName, userName, password);
+
+                if(connected_status == 1){
+                    connected = true;
+                } else if(connected_status == 0){
+                    connected = false;
+                    showConnectionOptions("Try Other options");
+                } else{
+                    System.exit(0);
+                }
+            } while (!connected);
+
 
             if (connected) {
                 storeClientCredentials(hostName, userName, password, protocol);
@@ -263,6 +293,13 @@ public class FTPClient {
         }
     }
 
+    /**
+     * This function prints all saved connections on console. and prompts user to select the connection details,
+     * that the user wants to use to connect to the remote server.
+     *
+     * @return selectedConnectionDetails [ArrayList<String>]  -
+     *              A list of selected connection information is returned.
+     */
     private static ArrayList<String> listAllUserCredentials() {
         ArrayList<ArrayList<String> > aList =
                 new ArrayList<>();
