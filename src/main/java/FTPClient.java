@@ -13,7 +13,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 /**
  * The main class for the FTP-Client Project
  *
- * @authors Aditya Sharoff, Anthony Chin, Chinmay Tawde, Minjin Enkhjargal, Sree Vandana
+ * @author Aditya Sharoff, Anthony Chin, Chinmay Tawde, Minjin Enkhjargal, Sree Vandana
  */
 public class FTPClient {
 
@@ -45,6 +45,10 @@ public class FTPClient {
                 "\n" );
     }
 
+    /**
+     * This method is used to provide connection options for the user.
+     * @param promptDialog [String] - Prompt to display before providing the options.
+     */
     public static void showConnectionOptions(String promptDialog){
         boolean repeatConnectOptions = false;
         Scanner scan = new Scanner(System.in);
@@ -118,7 +122,7 @@ public class FTPClient {
         String userOption;
         boolean repeatProcess = true;
         boolean connected = false;
-        int connected_status = 0;
+        int connected_status;
 
         logger.debug("Main method Execution -> Starts");
 
@@ -193,10 +197,10 @@ public class FTPClient {
 
                             String remote_Path = getInputFromUser(scan, "Enter Destination", "remote_Path");
 
-                            Set uploadFilesSet = new HashSet<String>();
+                            Set<String> uploadFilesSet = new HashSet<>();
                             boolean uploadMore;
-                            boolean isValidPath = true;
-                            String uploadMoreFiles = "n";
+                            boolean isValidPath;
+                            String uploadMoreFiles;
 
                             do {
                                 uploadMore = false;
@@ -307,7 +311,7 @@ public class FTPClient {
         int i = 1;
         try{
             ObjectMapper mapper = new ObjectMapper();
-            InputStream inputStream = new FileInputStream(new File("target\\classes\\clientCredentials.json"));
+            InputStream inputStream = new FileInputStream("target\\classes\\clientCredentials.json");
             JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, ClientCredentials.class);
             List<ClientCredentials> allClients = mapper.readValue(inputStream, type); // [obj, obj]
 
@@ -347,7 +351,7 @@ public class FTPClient {
         if(newClient){
             try{
                 ObjectMapper mapper = new ObjectMapper();
-                InputStream inputStream = new FileInputStream(new File("target\\classes\\clientCredentials.json"));
+                InputStream inputStream = new FileInputStream("target\\classes\\clientCredentials.json");
                 JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, ClientCredentials.class);
                 List<ClientCredentials> allClients = mapper.readValue(inputStream, type); // [obj, obj]
 
@@ -375,7 +379,7 @@ public class FTPClient {
 
         try{
             ObjectMapper mapper = new ObjectMapper();
-            InputStream inputStream = new FileInputStream(new File("target\\classes\\clientCredentials.json"));
+            InputStream inputStream = new FileInputStream("target\\classes\\clientCredentials.json");
             JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, ClientCredentials.class);
             List<ClientCredentials> clients = mapper.readValue(inputStream, type); // [obj, obj]
             for(ClientCredentials cc : clients){
