@@ -102,6 +102,9 @@ public class FTPClient {
                             break;
 
                         case "4":
+			    /**
+			     *This code was inspired by https://www.geeksforgeeks.org/java-program-to-display-all-the-directories-in-a-directory/
+			     */
 			    System.out.println("4. list directories & files on local machine\n");
 			    File curDir = new File(".");
 			    File[] filesList = curDir.listFiles();
