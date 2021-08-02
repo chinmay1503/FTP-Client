@@ -102,9 +102,23 @@ public class FTPClient {
                             break;
 
                         case "4":
-                            System.out.println("4. list directories & files on local machine\n");
-                            System.out.println("coming soon ... \n");
-                            break;
+			    System.out.println("4. list directories & files on local machine\n");
+			    File curDir = new File(".");
+			    File[] filesList = curDir.listFiles();
+			    for (int i = 0; i < filesList.length; i++)
+			    {
+			    	if(filesList[i].isDirectory())
+		            	{
+																													                                        System.out.println(filesList[i].getName() + " this is a directory")
+																										                            
+				}
+			        else
+				{
+
+			        	System.out.println(filesList[i].getName() + " this is a file")
+				}
+			   }
+                           break;
 
                         case "5":
                             logger.debug("starting functionality - Put file onto remote server");
