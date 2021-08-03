@@ -44,8 +44,7 @@ public class FTPClient {
     /**
      * Main method for FTPClient class.
      *
-     * @throws Exception
-     *          This method can throw many Exception's. so mentioning parent Exception.
+     * @throws Exception This method can throw many Exception's. so mentioning parent Exception.
      */
     public static void main(String[] args) throws Exception {
 

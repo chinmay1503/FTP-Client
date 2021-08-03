@@ -44,7 +44,6 @@ public class FTPConnection implements RemoteConnection {
         return false;
     }
 
-    @Override
     public void disconnect() throws FTPClientException {
         try {
             client.logout();
@@ -69,6 +68,14 @@ public class FTPConnection implements RemoteConnection {
                     "Give valid Directory path/ name .");
         }
         return false;
+    }
+
+    /**
+     * This method is used to retrieve a reply code of current FTP client connection.
+     * @return [int] - reply code of current client connection.
+     */
+    public int getClientReplyCode() {
+        return client.getReplyCode();
     }
 
     //download a single file from remote server to local
@@ -272,5 +279,4 @@ public class FTPConnection implements RemoteConnection {
         }
     }
 }
-
 
