@@ -22,6 +22,8 @@ public interface RemoteConnection {
 
     boolean checkDirectoryExists(String dirPath) throws FTPClientException;
 
+    boolean deleteFile(String filePath) throws FTPClientException;
+
     boolean deleteDirectory(String dirPath) throws  FTPClientException;
 
     void uploadSingleFile(String localFilePath, String remoteFilePath) throws IOException, FTPClientException;
@@ -32,4 +34,7 @@ public interface RemoteConnection {
 
     boolean downloadMultipleFiles(String[] localPaths, String remotePath) throws IOException;
 
+    boolean renameRemoteFile(String oldName, String newName) throws FTPClientException;
+
+     boolean copyDirectory(String toCopy, String newDir) throws FTPClientException;
 }

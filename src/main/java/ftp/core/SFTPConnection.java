@@ -33,10 +33,10 @@ public class SFTPConnection implements RemoteConnection {
             logger.info("Successfully Connected , creating a channel");
             sftpChannel = (ChannelSftp) session.openChannel("sftp");
             sftpChannel.connect();
+            return true;
         } catch (JSchException e) {
             throw new FTPClientException(e);
         }
-        return false;
     }
 
     @Override
@@ -59,23 +59,34 @@ public class SFTPConnection implements RemoteConnection {
     @Override
     public void listCurrentDirectory() throws FTPClientException {
         try {
-            Vector ls = sftpChannel.ls(sftpChannel.pwd());
-            Iterator iterator = ls.iterator();
-            while (iterator.hasNext()) {
-                System.out.println(iterator.next());
+            Vector fileList = sftpChannel.ls(sftpChannel.pwd());
+            for (int i = 0; i < fileList.size(); i++) {
+                ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) fileList.get(i);
+                System.out.println(entry.getFilename());
             }
         } catch (SftpException e) {
             throw new FTPClientException(e);
         }
     }
 
+    @Override
+    public boolean deleteFile(String filePath) throws FTPClientException {
+        try {
+            logger.debug("Going to delete file :[" + filePath + "]");
+            sftpChannel.rm(filePath);
+            logger.debug("File deleted successfully.");
+            return true;
+        } catch (SftpException e) {
+            throw new FTPClientException(e);
+        }
+    }
 
     @Override
     public boolean deleteDirectory(String dirPath) throws FTPClientException {
         try {
-            logger.debug("Going to delete file :[" + dirPath + "]");
+            logger.debug("Going to delete Directory :[" + dirPath + "]");
             sftpChannel.rmdir(dirPath);
-            logger.debug("File deleted successfully.");
+            logger.debug("Directory deleted successfully.");
             return true;
         } catch (SftpException e) {
             throw new FTPClientException(e);
@@ -94,7 +105,12 @@ public class SFTPConnection implements RemoteConnection {
 
     @Override
     public boolean createNewDirectory(String dirName) throws FTPClientException {
-        return false;
+        try {
+            sftpChannel.mkdir(dirName);
+            return true;
+        } catch (SftpException e) {
+            throw new FTPClientException(e);
+        }
     }
 
     @Override
@@ -109,6 +125,28 @@ public class SFTPConnection implements RemoteConnection {
 
     @Override
     public boolean checkDirectoryExists(String dirPath) throws FTPClientException {
+        SftpATTRS attrs = null;
+        try {
+            attrs = sftpChannel.stat(dirPath);
+        } catch (SftpException e) {
+            logger.error(dirPath + " not found");
+            return false;
+        }
+        return attrs != null && attrs.isDir();
+    }
+
+    @Override
+    public boolean renameRemoteFile(String oldName, String newName) throws FTPClientException {
+        try {
+            sftpChannel.rename(oldName, newName);
+            return true;
+        } catch (SftpException e) {
+            throw new FTPClientException(e);
+        }
+    }
+
+    @Override
+    public boolean copyDirectory(String toCopy, String newDir) throws FTPClientException {
         return false;
     }
 
