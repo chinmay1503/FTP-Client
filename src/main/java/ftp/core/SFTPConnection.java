@@ -28,10 +28,10 @@ public class SFTPConnection implements RemoteConnection {
             logger.info("Successfully Connected , creating a channel");
             sftpChannel = (ChannelSftp) session.openChannel("sftp");
             sftpChannel.connect();
+            return true;
         } catch (JSchException e) {
             throw new FTPClientException(e);
         }
-        return false;
     }
 
     public void disconnect() {
@@ -109,6 +109,20 @@ public class SFTPConnection implements RemoteConnection {
 
     @Override
     public boolean checkDirectoryExists(String dirPath) throws FTPClientException {
+        return false;
+    }
+    @Override
+    public boolean renameRemoteFile(String oldName, String newName) throws FTPClientException {
+        try {
+            sftpChannel.rename(oldName, newName);
+            return true;
+        } catch (SftpException e) {
+            throw new FTPClientException(e);
+        }
+    }
+
+    @Override
+    public boolean copyDirectory(String toCopy, String newDir) throws FTPClientException {
         return false;
     }
 }

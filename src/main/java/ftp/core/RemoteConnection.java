@@ -26,4 +26,7 @@ public interface RemoteConnection {
 
     void uploadMultipleFiles(String[] localPaths, String remotePath);
 
+    boolean renameRemoteFile(String oldName, String newName) throws FTPClientException;
+
+     boolean copyDirectory(String toCopy, String newDir) throws FTPClientException;
 }
