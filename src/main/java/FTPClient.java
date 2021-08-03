@@ -102,26 +102,22 @@ public class FTPClient {
                             break;
 
                         case "4":
-			    /**
-			     *This code was inspired by https://www.geeksforgeeks.org/java-program-to-display-all-the-directories-in-a-directory/
-			     */
-			    System.out.println("4. list directories & files on local machine\n");
-			    File curDir = new File(".");
-			    File[] filesList = curDir.listFiles();
-			    for (int i = 0; i < filesList.length; i++)
-			    {
-			    	if(filesList[i].isDirectory())
-		            	{
-																													                                        System.out.println(filesList[i].getName() + " this is a directory")
-																										                            
-				}
-			        else
-				{
+                            /**
+                             *This code was inspired by https://www.geeksforgeeks.org/java-program-to-display-all-the-directories-in-a-directory/
+                             */
+                            System.out.println("4. list directories & files on local machine\n");
+                            File curDir = new File(".");
+                            File[] filesList = curDir.listFiles();
+                            for (int i = 0; i < filesList.length; i++) {
+                                if (filesList[i].isDirectory()) {
+                                    System.out.println(filesList[i].getName() + " this is a directory");
 
-			        	System.out.println(filesList[i].getName() + " this is a file")
-				}
-			   }
-                           break;
+                                } else {
+
+                                    System.out.println(filesList[i].getName() + " this is a file");
+                                }
+                            }
+                            break;
 
                         case "5":
                             logger.debug("starting functionality - Put file onto remote server");
