@@ -6,8 +6,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.Vector;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 public class SFTPConnection implements RemoteConnection {
 
@@ -137,5 +139,59 @@ public class SFTPConnection implements RemoteConnection {
     @Override
     public boolean copyDirectory(String toCopy, String newDir) throws FTPClientException {
         return false;
+    }
+
+    @Override
+    public int searchFilesWithKeyword(String filePath, String keyword) throws FTPClientException {
+        if (isNullOrEmpty(filePath) || isNullOrEmpty(keyword)) {
+            return 0;
+        }
+
+        ArrayList<String> result = new ArrayList<>();
+        try {
+            Vector fileList = sftpChannel.ls(filePath);
+            for (Object sftpFile : fileList) {
+                ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) sftpFile;
+                if (entry.getFilename().contains(keyword)) {
+                    result.add(entry.getFilename());
+                }
+            }
+            printSearchResult(result);
+        } catch (SftpException e) {
+            throw new FTPClientException(e);
+        }
+        return result.size();
+    }
+
+    private void printSearchResult(ArrayList<String> result) {
+        if (result != null && result.size() > 0) {
+            System.out.println("SEARCH RESULT:");
+            for (String ftpFile : result) {
+                System.out.println(ftpFile);
+            }
+        }
+    }
+
+    @Override
+    public int searchFilesWithExtension(String filePath, String extension) throws FTPClientException {
+        if (isNullOrEmpty(filePath) || isNullOrEmpty(extension)) {
+            return 0;
+        }
+
+        String ext = extension.startsWith(".") ? extension : "." + extension;
+        ArrayList<String> result = new ArrayList<>();
+        try {
+            Vector fileList = sftpChannel.ls(filePath);
+            for (Object sftpFile : fileList) {
+                ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) sftpFile;
+                if (entry.getFilename().endsWith(ext)) {
+                    result.add(entry.getFilename());
+                }
+            }
+            printSearchResult(result);
+        } catch (SftpException e) {
+            throw new FTPClientException(e);
+        }
+        return result.size();
     }
 }

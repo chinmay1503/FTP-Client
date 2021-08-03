@@ -4,6 +4,7 @@ import com.jcraft.jsch.IO;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPFileFilter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -12,6 +13,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
  * FTPConnection class - this class has all the method implementations that is used by FTPClient.
@@ -223,6 +226,43 @@ public class FTPConnection implements RemoteConnection {
         } catch (IOException e) {
                 throw new FTPClientException(e);
         }
+    }
+
+    @Override
+    public int searchFilesWithKeyword(String filePath, String keyword) throws FTPClientException {
+        if (isNullOrEmpty(filePath) || isNullOrEmpty(keyword)) {
+            return 0;
+        }
+
+        FTPFileFilter filter = ftpFile -> (ftpFile.isFile() && ftpFile.getName().contains(keyword));
+        return searchFiles(filePath, filter);
+    }
+
+    private int searchFiles(String filePath, FTPFileFilter filter) throws FTPClientException {
+        FTPFile[] result;
+        try {
+            result = client.listFiles(filePath, filter);
+            if (result != null && result.length > 0) {
+                System.out.println("SEARCH RESULT:");
+                for (FTPFile ftpFile : result) {
+                    System.out.println(ftpFile.getName());
+                }
+            }
+        } catch (IOException e) {
+            throw new FTPClientException(e);
+        }
+        return result != null ? result.length : 0;
+    }
+
+    @Override
+    public int searchFilesWithExtension(String filePath, String extension) throws FTPClientException {
+        if (isNullOrEmpty(filePath) || isNullOrEmpty(extension)) {
+            return 0;
+        }
+
+        String ext = extension.startsWith(".") ? extension : "." + extension;
+        FTPFileFilter filter = ftpFile -> (ftpFile.isFile() && ftpFile.getName().endsWith(ext));
+        return searchFiles(filePath, filter);
     }
 }
 
