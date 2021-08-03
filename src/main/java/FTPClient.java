@@ -51,12 +51,8 @@ public class FTPClient {
         logger.debug("Main method Execution -> Starts");
 
 
-        Scanner scan = new Scanner(System.in);
         String userOption;
-        String userInput;
-        boolean repeateProcess = true;
         try (Scanner scan = new Scanner(System.in)) {
-            String userOption;
             boolean repeatProcess = true;
 
             System.out.println("HostName: (Eg: 127.0.0.1)");
@@ -196,7 +192,7 @@ public class FTPClient {
                             do {
                                 uploadMore = false;
                                 System.out.println("Enter Local file path, that you want to upload");
-                                String local_Path = scan.nextLine();
+                                local_Path = scan.nextLine();
 
                                 uploadFilesSet.add(local_Path);
 
@@ -275,10 +271,6 @@ public class FTPClient {
                             }
                             break;
 
-                        case "14":
-                            System.out.println("14. Log off from the Server\n");
-                            remoteConnection.disconnect();
-                            break;
                         case "11.":
                             System.out.println("11. Rename file on local machine\n");
 

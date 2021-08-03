@@ -1,19 +1,15 @@
 package ftp.core;
 
-import com.jcraft.jsch.IO;
-import org.apache.commons.io.FileUtils;
-import com.jcraft.jsch.IO;
-import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.SocketException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * FTPConnection class - this class has all the method implementations that is used by FTPClient.
@@ -120,12 +116,6 @@ public class FTPConnection implements RemoteConnection {
     public boolean checkLocalDirectoryExists(String dirPath) {
         Path path = Paths.get(dirPath);
         return Files.exists(path);
-    /**
-     * This method is used to retrieve a reply code of current FTP client connection.
-     * @return [int] - reply code of current client connection.
-     */
-    public int getClientReplyCode() {
-        return client.getReplyCode();
     }
 
     /**
