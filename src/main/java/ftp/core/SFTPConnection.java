@@ -28,10 +28,10 @@ public class SFTPConnection implements RemoteConnection {
             logger.info("Successfully Connected , creating a channel");
             sftpChannel = (ChannelSftp) session.openChannel("sftp");
             sftpChannel.connect();
+            return true;
         } catch (JSchException e) {
             throw new FTPClientException(e);
         }
-        return false;
     }
 
     public void disconnect() {
