@@ -170,10 +170,8 @@ public class FTPClient {
                             break;
 
                         case "12":
-                            System.out.println("12. Copy directories on remote server\n");
-                            String toCopy = getInputFromUser(scan,"Enter name of directory to copy", "toCopy");
-                            String newDir = getInputFromUser(scan, "Enter name of new copy", "newDir");
-                            remoteConnection.copyDirectory(toCopy, newDir);
+                            System.out.println("12. Copy directory from remote server\n");
+                            System.out.println("coming soon ... \n");
                             break;
 
                         case "13":
