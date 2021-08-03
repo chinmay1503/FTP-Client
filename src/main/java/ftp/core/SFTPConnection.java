@@ -53,10 +53,10 @@ public class SFTPConnection implements RemoteConnection {
     @Override
     public void listCurrentDirectory() throws FTPClientException {
         try {
-            Vector ls = sftpChannel.ls(sftpChannel.pwd());
-            Iterator iterator = ls.iterator();
-            while (iterator.hasNext()) {
-                System.out.println(iterator.next());
+            Vector fileList = sftpChannel.ls(sftpChannel.pwd());
+            for (int i = 0; i < fileList.size(); i++) {
+                ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) fileList.get(i);
+                System.out.println(entry.getFilename());
             }
         } catch (SftpException e) {
             throw new FTPClientException(e);
@@ -99,7 +99,12 @@ public class SFTPConnection implements RemoteConnection {
 
     @Override
     public boolean createNewDirectory(String dirName) throws FTPClientException {
-        return false;
+        try {
+            sftpChannel.mkdir(dirName);
+            return true;
+        } catch (SftpException e) {
+            throw new FTPClientException(e);
+        }
     }
 
     @Override
@@ -109,8 +114,16 @@ public class SFTPConnection implements RemoteConnection {
 
     @Override
     public boolean checkDirectoryExists(String dirPath) throws FTPClientException {
-        return false;
+        SftpATTRS attrs = null;
+        try {
+            attrs = sftpChannel.stat(dirPath);
+        } catch (SftpException e) {
+            logger.error(dirPath + " not found");
+            return false;
+        }
+        return attrs != null && attrs.isDir();
     }
+
     @Override
     public boolean renameRemoteFile(String oldName, String newName) throws FTPClientException {
         try {

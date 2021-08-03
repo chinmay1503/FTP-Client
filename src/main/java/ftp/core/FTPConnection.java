@@ -83,10 +83,14 @@ public class FTPConnection implements RemoteConnection {
     @Override
     public boolean checkDirectoryExists(String dirPath) throws FTPClientException {
         try {
+            // This is the limitation of the FTPClient library that we are using, thus we need to use changeWorkingDirectory and later traverse back to original path.
             client.changeWorkingDirectory(dirPath);
             int returnCode = client.getReplyCode();
             if (returnCode == 550) {
                 return false;
+            } else {
+                logger.info("File exists, reverting to previous directory");
+                client.changeWorkingDirectory("..");
             }
         } catch (IOException e) {
             throw new FTPClientException(e);
