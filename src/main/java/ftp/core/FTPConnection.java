@@ -79,7 +79,15 @@ public class FTPConnection implements RemoteConnection {
     //download a single file from remote server to local
     @Override
     public boolean downloadMultipleFiles(String[] remotePaths, String localPath) throws IOException {
-        System.out.println("Not implemented yet. Coming soon...");
+        System.out.println("Remote paths --> "+ remotePaths);
+        try {
+            for (String remotePath : remotePaths) {
+                downloadSingleFile(localPath, remotePath);
+            }
+        } catch (IOException | FTPClientException e) {
+            System.out.println("-- Error while downloading files from Remote server --");
+        }
+
         return false;
     }
 
