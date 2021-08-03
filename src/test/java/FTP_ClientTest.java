@@ -140,16 +140,29 @@ public class FTP_ClientTest {
         }
     }
 
-    public static void createDummyFooFile() throws FTPClientException {
-        try{
-            FileUtils.touch(localDummyFilePath.toFile());
-        } catch(IOException e){
-            throw new FTPClientException(e);
-        }
+    @Test
+    public void deleteDummyFileFromRemote_FTP() throws FTPClientException, IOException {
+        ftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
+        assertTrue(ftpRemoteConnection.deleteFile("/foo.txt"));
     }
 
-    public static void cleanUpDummyFooFile() {
-        FileUtils.deleteQuietly(localDummyFilePath.toFile());
+    @Test
+    public void deleteNonExistentFileFromRemote_FTP() throws FTPClientException {
+        assertFalse(ftpRemoteConnection.deleteFile("/foo-non-existent-file.txt"));
+    }
+
+    @Test
+    public void deleteDummyFileFromRemote_SFTP() throws FTPClientException, IOException {
+        //TODO: this test fails because of incomplete upload single file implementation
+        sftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
+        assertTrue(sftpRemoteConnection.deleteFile("/foo.txt"));
+    }
+
+    @Test
+    public void deleteNonExistentFileFromRemote_SFTP() {
+        assertThrows(FTPClientException.class, () -> {
+            sftpRemoteConnection.deleteFile("/foo-non-existent-file.txt");
+        });
     }
 
     @Test
@@ -227,6 +240,18 @@ public class FTP_ClientTest {
 
         fileCount = sftpRemoteConnection.searchFilesWithExtension("/", "");
         assertEquals(0, fileCount);
+    }
+
+    public static void createDummyFooFile() throws FTPClientException {
+        try{
+            FileUtils.touch(localDummyFilePath.toFile());
+        } catch(IOException e){
+            throw new FTPClientException(e);
+        }
+    }
+
+    public static void cleanUpDummyFooFile() {
+        FileUtils.deleteQuietly(localDummyFilePath.toFile());
     }
 
     @AfterAll
