@@ -92,15 +92,44 @@ public class SFTPConnection implements RemoteConnection {
     }
 
     @Override
-    public boolean deleteDirectory(String dirPath) throws FTPClientException {
-        try {
-            logger.debug("Going to delete Directory :[" + dirPath + "]");
-            sftpChannel.rmdir(dirPath);
-            logger.debug("Directory deleted successfully.");
-            return true;
-        } catch (SftpException e) {
-            throw new FTPClientException(e);
+    public boolean deleteDirectory(String remoteDir) {
+        try
+        {
+            if(isDirectory(remoteDir))
+            {
+                Vector<ChannelSftp.LsEntry> dirList = sftpChannel.ls(remoteDir);
+
+                for(ChannelSftp.LsEntry entry : dirList)
+                {
+                    if(!(entry.getFilename().equals(".") || entry.getFilename().equals("..")))
+                    {
+                        remoteDir = remoteDir.endsWith("/") ? remoteDir : remoteDir + "/";
+                        if(entry.getAttrs().isDir())
+                        {
+                            deleteDirectory(remoteDir  + entry.getFilename() + "/");
+                        }
+                        else
+                        {
+                            sftpChannel.rm(remoteDir + entry.getFilename());
+                        }
+                    }
+                }
+
+                sftpChannel.cd("..");
+                sftpChannel.rmdir(remoteDir);
+            }
         }
+        catch (SftpException e)
+        {
+            logger.error("Error while deleting the directory :[" + e.getMessage() + "]");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isDirectory(String remoteDirectory) throws SftpException
+    {
+        return sftpChannel.stat(remoteDirectory).isDir();
     }
 
     @Override
@@ -138,7 +167,9 @@ public class SFTPConnection implements RemoteConnection {
     @Override
     public boolean createNewDirectory(String dirName) throws FTPClientException {
         try {
-            sftpChannel.mkdir(dirName);
+            if (!checkDirectoryExists(dirName)) {
+                sftpChannel.mkdir(dirName);
+            }
             return true;
         } catch (SftpException e) {
             throw new FTPClientException(e);
