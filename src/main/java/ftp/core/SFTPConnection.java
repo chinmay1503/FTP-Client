@@ -5,7 +5,10 @@ import com.jcraft.jsch.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Vector;
 
@@ -90,8 +93,30 @@ public class SFTPConnection implements RemoteConnection {
     }
 
     @Override
-    public void uploadSingleFile(String localFilePath, String remoteFilePath) throws IOException {
-
+    public void uploadSingleFile(String localFilePath, String remotePath) throws IOException, FTPClientException {
+        String remoteFilePath;
+        File localFile = new File(localFilePath);
+        if (localFile.isFile()) {
+            remoteFilePath = remotePath + "/" + localFile.getName();
+            if (checkDirectoryExists(remotePath)) {
+                try (InputStream inputStream = new FileInputStream(localFile)) {
+                    sftpChannel.put(inputStream, remoteFilePath);
+                    logger.info("file upload successful");
+                    System.out.println("UPLOADED a file to: " + remoteFilePath);
+                } catch (SftpException e) {
+                    logger.info("file upload Unsuccessful");
+                    System.out.println("Error occurred when trying to upload the file: \""
+                            + localFilePath + "\" to \"" + remoteFilePath + "\"");
+                    System.out.println("-- Something went wrong when trying to upload the file. --\n");
+                }
+            } else {
+                logger.info("Error occurred - The Remote file path provided does not exist.");
+                System.out.println("Error: The Remote file path provided does not exist.\n");
+            }
+        } else {
+            logger.info("Error occurred - The local path provided is not valid.");
+            System.out.println("Error: The local path provided is not valid.\n");
+        }
     }
 
     @Override
