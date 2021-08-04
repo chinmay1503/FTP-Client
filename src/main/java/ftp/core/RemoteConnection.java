@@ -45,4 +45,6 @@ public interface RemoteConnection {
     void downloadDirectory(String currentDir, String saveDir) throws IOException, FTPClientException;
 
     void uploadDirectory(String localParentDir, String remoteParentDir) throws IOException, FTPClientException;
+
+    boolean renameLocalFile(String oldName, String newName) throws FTPClientException;
 }

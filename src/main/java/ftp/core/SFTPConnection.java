@@ -5,6 +5,7 @@ import com.jcraft.jsch.*;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.codehaus.plexus.util.FileUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -303,6 +304,11 @@ public class SFTPConnection implements RemoteConnection {
     @Override
     public void uploadDirectory(String localParentDir, String remoteParentDir) throws IOException, FTPClientException {
         return;
+    }
+
+    @Override
+    public boolean renameLocalFile(String oldName, String newName) throws FTPClientException {
+        return FTPUtils.renameLocalFile(oldName, newName);
     }
 
 }

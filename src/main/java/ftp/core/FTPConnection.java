@@ -430,5 +430,10 @@ public class FTPConnection implements RemoteConnection {
         }
     }
 
+    @Override
+    public boolean renameLocalFile(String oldName, String newName) throws FTPClientException {
+        return FTPUtils.renameLocalFile(oldName, newName);
+    }
+
 }
 

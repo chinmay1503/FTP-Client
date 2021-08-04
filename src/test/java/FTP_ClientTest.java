@@ -1,7 +1,4 @@
-import ftp.core.ClientCredentials;
-import ftp.core.FTPClientException;
-import ftp.core.RemoteConnection;
-import ftp.core.RemoteConnectionFactory;
+import ftp.core.*;
 import org.apache.commons.io.FileUtils;
 import org.junit.Ignore;
 import org.junit.jupiter.api.AfterAll;
@@ -240,6 +237,24 @@ public class FTP_ClientTest {
 
         fileCount = sftpRemoteConnection.searchFilesWithExtension("/", "");
         assertEquals(0, fileCount);
+    }
+
+    @Test
+    public void renameLocalFileTest() throws FTPClientException, IOException {
+        String oldName = System.getProperty("user.dir") + File.separator + "test_rename.txt";
+        String newName = System.getProperty("user.dir") + File.separator + "test_renamed_file.txt";
+        FileUtils.touch(new File(oldName));
+        FTPUtils.renameLocalFile(oldName, newName);
+        assertTrue(org.codehaus.plexus.util.FileUtils.fileExists(newName));
+        FileUtils.deleteQuietly(new File(newName));
+    }
+
+    @Test
+    public void renameLocalFileNotExistTest() throws FTPClientException, IOException {
+        String oldName = System.getProperty("user.dir") + File.separator + "test_rename.txt";
+        String newName = System.getProperty("user.dir") + File.separator + "test_renamed_file.txt";
+        assertFalse(org.codehaus.plexus.util.FileUtils.fileExists(oldName));
+        assertFalse(FTPUtils.renameLocalFile(oldName, newName));
     }
 
     public static void createDummyFooFile() throws FTPClientException {
