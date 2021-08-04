@@ -11,6 +11,8 @@ public interface RemoteConnection {
 
     boolean createNewDirectory(String dirName) throws FTPClientException, IOException;
 
+    int getClientReplyCode() throws FTPClientException;
+
     void getCurrentRemoteDirectory() throws FTPClientException;
 
     void listCurrentDirectory() throws FTPClientException;
@@ -36,4 +38,8 @@ public interface RemoteConnection {
     boolean renameRemoteFile(String oldName, String newName) throws FTPClientException;
 
     boolean copyDirectory(String toCopy, String newDir) throws FTPClientException;
+
+    int searchFilesWithKeyword(String filePath, String keyword) throws FTPClientException;
+
+    int searchFilesWithExtension(String filePath, String extension) throws FTPClientException;
 }

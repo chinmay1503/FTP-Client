@@ -7,13 +7,18 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import static ftp.core.FTPUtils.getFileNameFromRemote;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 public class SFTPConnection implements RemoteConnection {
 
@@ -23,7 +28,6 @@ public class SFTPConnection implements RemoteConnection {
     private static ChannelSftp sftpChannel;
     private static Session session = null;
 
-    @Override
     public boolean connect(String hostName, String userName, String password) throws FTPClientException {
         try {
             session = jsch.getSession(userName, hostName, 22);
@@ -41,13 +45,16 @@ public class SFTPConnection implements RemoteConnection {
         }
     }
 
-    @Override
     public void disconnect() {
         sftpChannel.disconnect();
         session.disconnect();
         logger.info("Disconnecting from the remote server");
     }
 
+    @Override
+    public int getClientReplyCode() throws FTPClientException {
+        return 0;
+    }
 
     @Override
     public void getCurrentRemoteDirectory() throws FTPClientException {
@@ -76,7 +83,6 @@ public class SFTPConnection implements RemoteConnection {
         try {
             logger.debug("Going to delete file :[" + filePath + "]");
             sftpChannel.rm(filePath);
-            logger.debug("File deleted successfully.");
             return true;
         } catch (SftpException e) {
             throw new FTPClientException(e);
@@ -96,8 +102,30 @@ public class SFTPConnection implements RemoteConnection {
     }
 
     @Override
-    public void uploadSingleFile(String localFilePath, String remoteFilePath) throws IOException {
-
+    public void uploadSingleFile(String localFilePath, String remotePath) throws IOException, FTPClientException {
+        String remoteFilePath;
+        File localFile = new File(localFilePath);
+        if (localFile.isFile()) {
+            remoteFilePath = remotePath + "/" + localFile.getName();
+            if (checkDirectoryExists(remotePath)) {
+                try (InputStream inputStream = new FileInputStream(localFile)) {
+                    sftpChannel.put(inputStream, remoteFilePath);
+                    logger.info("file upload successful");
+                    System.out.println("UPLOADED a file to: " + remoteFilePath);
+                } catch (SftpException e) {
+                    logger.info("file upload Unsuccessful");
+                    System.out.println("Error occurred when trying to upload the file: \""
+                            + localFilePath + "\" to \"" + remoteFilePath + "\"");
+                    System.out.println("-- Something went wrong when trying to upload the file. --\n");
+                }
+            } else {
+                logger.info("Error occurred - The Remote file path provided does not exist.");
+                System.out.println("Error: The Remote file path provided does not exist.\n");
+            }
+        } else {
+            logger.info("Error occurred - The local path provided is not valid.");
+            System.out.println("Error: The local path provided is not valid.\n");
+        }
     }
 
     @Override
@@ -183,5 +211,59 @@ public class SFTPConnection implements RemoteConnection {
             System.out.println("-- Error while downloading files from Remote server --");
         }
         return false;
+    }
+
+    @Override
+    public int searchFilesWithKeyword(String filePath, String keyword) throws FTPClientException {
+        if (isNullOrEmpty(filePath) || isNullOrEmpty(keyword)) {
+            return 0;
+        }
+
+        ArrayList<String> result = new ArrayList<>();
+        try {
+            Vector fileList = sftpChannel.ls(filePath);
+            for (Object sftpFile : fileList) {
+                ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) sftpFile;
+                if (entry.getFilename().contains(keyword)) {
+                    result.add(entry.getFilename());
+                }
+            }
+            printSearchResult(result);
+        } catch (SftpException e) {
+            throw new FTPClientException(e);
+        }
+        return result.size();
+    }
+
+    private void printSearchResult(ArrayList<String> result) {
+        if (result != null && result.size() > 0) {
+            System.out.println("SEARCH RESULT:");
+            for (String ftpFile : result) {
+                System.out.println(ftpFile);
+            }
+        }
+    }
+
+    @Override
+    public int searchFilesWithExtension(String filePath, String extension) throws FTPClientException {
+        if (isNullOrEmpty(filePath) || isNullOrEmpty(extension)) {
+            return 0;
+        }
+
+        String ext = extension.startsWith(".") ? extension : "." + extension;
+        ArrayList<String> result = new ArrayList<>();
+        try {
+            Vector fileList = sftpChannel.ls(filePath);
+            for (Object sftpFile : fileList) {
+                ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) sftpFile;
+                if (entry.getFilename().endsWith(ext)) {
+                    result.add(entry.getFilename());
+                }
+            }
+            printSearchResult(result);
+        } catch (SftpException e) {
+            throw new FTPClientException(e);
+        }
+        return result.size();
     }
 }
