@@ -257,15 +257,21 @@ public class FTPClient {
 
                             case "16":
                                 System.out.println("16. Log off from the Server\n");
+                                logger.info("Going to disconnect from the server");
                                 remoteConnection.disconnect();
+                                repeatProcess = false;
+                                connected = false;
+                                logger.info("Disconnected from the server successfully");
                                 break;
 
                             default:
-                                System.out.println("coming soon ... \n");
+                                logger.info("Please Select a Valid Option");
                         }
-
-                        System.out.println("Do you want to choose other option? (y/n): ");
-                        String repeat = scan.nextLine();
+                        String repeat = "";
+                        if (repeatProcess) {
+                            System.out.println("Do you want to choose other option? (y/n): ");
+                            repeat = scan.nextLine();
+                        }
                         if (repeat.equalsIgnoreCase("n")) {
                             repeatProcess = false;
                         }
