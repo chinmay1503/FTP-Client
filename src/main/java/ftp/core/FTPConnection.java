@@ -11,6 +11,11 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.net.SocketException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import static ftp.core.FTPUtils.getFileNameFromRemote;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
@@ -22,6 +27,7 @@ public class FTPConnection implements RemoteConnection {
     private FTPClient client;
     private static final Logger logger = LogManager.getLogger(FTPClient.class);
 
+    @Override
     public boolean connect(String hostName, String userName, String password) {
         try {
             client = new FTPClient();
@@ -57,6 +63,7 @@ public class FTPConnection implements RemoteConnection {
      * @return [boolean] - returns true if successfully created a directory on remote server, else return false.
      * @throws IOException - can throw exception while handling files.
      */
+    @Override
     public boolean createNewDirectory(String dirName) throws IOException {
         try{
             return client.makeDirectory(dirName);
@@ -71,8 +78,53 @@ public class FTPConnection implements RemoteConnection {
      * This method is used to retrieve a reply code of current FTP client connection.
      * @return [int] - reply code of current client connection.
      */
+    @Override
     public int getClientReplyCode() {
         return client.getReplyCode();
+    }
+
+    //download a single file from remote server to local
+    @Override
+    public boolean downloadSingleFile(String localPath, String remotePath) throws IOException, FTPClientException {
+        OutputStream outputStream = null;
+        try {
+            String fileName = getFileNameFromRemote(remotePath);
+            File downloadToLocal = new File(localPath + File.separator + fileName);
+            outputStream = new BufferedOutputStream(new FileOutputStream(downloadToLocal));
+            return client.retrieveFile(remotePath, outputStream);
+        } finally {
+            if(outputStream != null) {
+                outputStream.close();
+            }
+        }
+    }
+
+    //download a single file from remote server to local
+    @Override
+    public boolean downloadMultipleFiles(String[] remotePaths, String localPath) throws IOException {
+        System.out.println("Remote paths --> "+ remotePaths);
+        try {
+            for (String remotePath : remotePaths) {
+                downloadSingleFile(localPath, remotePath);
+            }
+        } catch (IOException | FTPClientException e) {
+            System.out.println("-- Error while downloading files from Remote server --");
+        }
+
+        return false;
+    }
+
+    //Check if file exists in remote directory
+    @Override
+    public boolean checkFileExists(String filePath) throws IOException {
+        FTPFile[] remoteFile = client.listFiles(filePath);
+        return remoteFile.length > 0;
+    }
+
+    @Override
+    public boolean checkLocalDirectoryExists(String dirPath) {
+        Path path = Paths.get(dirPath);
+        return Files.exists(path);
     }
 
     /**

@@ -1,7 +1,6 @@
 package ftp.core;
 
 import org.apache.commons.net.ftp.FTPClient;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -19,6 +18,10 @@ public interface RemoteConnection {
 
     void listCurrentDirectory() throws FTPClientException;
 
+    boolean checkFileExists(String filePath) throws FTPClientException, IOException;
+
+    boolean checkLocalDirectoryExists(String dirPath) throws FileNotFoundException;
+
     boolean checkDirectoryExists(String dirPath) throws FTPClientException;
 
     boolean deleteFile(String filePath) throws FTPClientException;
@@ -28,6 +31,10 @@ public interface RemoteConnection {
     void uploadSingleFile(String localFilePath, String remoteFilePath) throws IOException, FTPClientException;
 
     void uploadMultipleFiles(String[] localPaths, String remotePath);
+
+    boolean downloadSingleFile(String localPath, String remotePath) throws IOException, FTPClientException;
+
+    boolean downloadMultipleFiles(String[] localPaths, String remotePath) throws IOException;
 
     boolean renameRemoteFile(String oldName, String newName) throws FTPClientException;
 
