@@ -89,42 +89,30 @@ public class SFTPConnection implements RemoteConnection {
 
     @Override
     public boolean deleteDirectory(String remoteDir) {
-        try
-        {
-            if(isDirectory(remoteDir))
-            {
+        try {
+            if (isDirectory(remoteDir)) {
                 Vector<ChannelSftp.LsEntry> dirList = sftpChannel.ls(remoteDir);
-
-                for(ChannelSftp.LsEntry entry : dirList)
-                {
-                    if(!(entry.getFilename().equals(".") || entry.getFilename().equals("..")))
-                    {
+                for (ChannelSftp.LsEntry entry : dirList) {
+                    if (!(entry.getFilename().equals(".") || entry.getFilename().equals(".."))) {
                         remoteDir = remoteDir.endsWith("/") ? remoteDir : remoteDir + "/";
-                        if(entry.getAttrs().isDir())
-                        {
-                            deleteDirectory(remoteDir  + entry.getFilename() + "/");
-                        }
-                        else
-                        {
+                        if (entry.getAttrs().isDir()) {
+                            deleteDirectory(remoteDir + entry.getFilename() + "/");
+                        } else {
                             sftpChannel.rm(remoteDir + entry.getFilename());
                         }
                     }
                 }
-
                 sftpChannel.cd("..");
                 sftpChannel.rmdir(remoteDir);
             }
-        }
-        catch (SftpException e)
-        {
+        } catch (SftpException e) {
             logger.error("Error while deleting the directory :[" + e.getMessage() + "]");
             return false;
         }
         return true;
     }
 
-    private boolean isDirectory(String remoteDirectory) throws SftpException
-    {
+    private boolean isDirectory(String remoteDirectory) throws SftpException {
         return sftpChannel.stat(remoteDirectory).isDir();
     }
 
@@ -177,10 +165,10 @@ public class SFTPConnection implements RemoteConnection {
         try {
             Vector files = sftpChannel.ls(filePath);
             return files.size() == 1;
-       } catch (SftpException e) {
+        } catch (SftpException e) {
             logger.error(filePath + " not found");
             return false;
-       }
+        }
     }
 
     @Override
@@ -231,7 +219,7 @@ public class SFTPConnection implements RemoteConnection {
 
     @Override
     public boolean downloadMultipleFiles(String[] remotePaths, String localPath) throws IOException {
-        System.out.println("Remote paths --> "+ remotePaths);
+        System.out.println("Remote paths --> " + remotePaths);
         try {
             for (String remotePath : remotePaths) {
                 downloadSingleFile(localPath, remotePath);

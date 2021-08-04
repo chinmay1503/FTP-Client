@@ -4,7 +4,8 @@ import ftp.core.RemoteConnectionFactory;
 import ftp.core.RemoteConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import  ftp.core.ClientCredentials;
+import ftp.core.ClientCredentials;
+
 import java.io.*;
 import java.util.*;
 
@@ -22,7 +23,7 @@ public class FTPClient {
     /**
      * This method is used to print the options for user's to choose from.
      */
-    public static void showOptions(){
+    public static void showOptions() {
         System.out.println("Select from Following options (Enter option number).\n" +
                 "1. list directories & files on remote server\n" +
                 "2. Get file from remote server\n" +
@@ -40,14 +41,13 @@ public class FTPClient {
                 "14. Search file on remote server\n" +
                 "15. Search file on local machine\n" +
                 "16. Log off from the Server\n" +
-                "\n" );
+                "\n");
     }
 
     /**
      * Main method for FTPClient class.
      *
-     * @throws Exception
-     *          This method can throw many Exception's. so mentioning parent Exception.
+     * @throws Exception This method can throw many Exception's. so mentioning parent Exception.
      */
     public static void main(String[] args) throws Exception {
 
@@ -125,48 +125,48 @@ public class FTPClient {
 
                                 break;
 
-                        case "3":
-                            System.out.println("3. Get multiple file from remote server\n");
-                            String userOptions = getInputFromUser(scan, "Would you like to download the contents of the entire directory? y/n\n", "userOption");
+                            case "3":
+                                System.out.println("3. Get multiple file from remote server\n");
+                                String userOptions = getInputFromUser(scan, "Would you like to download the contents of the entire directory? y/n\n", "userOption");
 
-                            //Call method from case 11 to download entire directory
-                            if("y".equalsIgnoreCase(userOptions)) {
-                                System.out.println("Enter Destination to download to: ");
+                                //Call method from case 11 to download entire directory
+                                if ("y".equalsIgnoreCase(userOptions)) {
+                                    System.out.println("Enter Destination to download to: ");
 
-                            }
-                            //Prompt and download each file from the remote path
-                            else {
-                                System.out.println("Enter Destination to download to: ");
-                                String local_Path = scan.nextLine();
+                                }
+                                //Prompt and download each file from the remote path
+                                else {
+                                    System.out.println("Enter Destination to download to: ");
+                                    String local_Path = scan.nextLine();
 
-                                Set <String> downloadFilesSet = new HashSet<>();
-                                boolean downloadMore;
+                                    Set<String> downloadFilesSet = new HashSet<>();
+                                    boolean downloadMore;
 
-                                do {
-                                    downloadMore = false;
                                     do {
-                                        System.out.println("Enter remote path, where you wish to download from: ");
-                                        String remote_Path = scan.nextLine();
-                                        promptForRemoteFile = remoteConnection.checkFileExists(remote_Path);
+                                        downloadMore = false;
+                                        do {
+                                            System.out.println("Enter remote path, where you wish to download from: ");
+                                            String remote_Path = scan.nextLine();
+                                            promptForRemoteFile = remoteConnection.checkFileExists(remote_Path);
 
-                                        if (!promptForRemoteFile) {
-                                            System.out.println("-- Error: could not locate Directory with the name " + remote_Path +
-                                                    " in remote server --");
-                                        } else {
-                                            downloadFilesSet.add(remote_Path);
+                                            if (!promptForRemoteFile) {
+                                                System.out.println("-- Error: could not locate Directory with the name " + remote_Path +
+                                                        " in remote server --");
+                                            } else {
+                                                downloadFilesSet.add(remote_Path);
+                                            }
+                                        } while (!promptForRemoteFile);
+
+                                        System.out.println("Do you want to upload another File ? (y/n)");
+                                        String downloadMoreFiles = scan.nextLine();
+                                        if ("y".equalsIgnoreCase(downloadMoreFiles)) {
+                                            downloadMore = true;
                                         }
-                                    } while(!promptForRemoteFile);
+                                    } while (downloadMore);
+                                    remoteConnection.downloadMultipleFiles(Arrays.copyOf(downloadFilesSet.toArray(), downloadFilesSet.toArray().length, String[].class), local_Path);
+                                }
 
-                                    System.out.println("Do you want to upload another File ? (y/n)");
-                                    String downloadMoreFiles = scan.nextLine();
-                                    if ("y".equalsIgnoreCase(downloadMoreFiles)) {
-                                        downloadMore = true;
-                                    }
-                                } while (downloadMore);
-                                remoteConnection.downloadMultipleFiles(Arrays.copyOf(downloadFilesSet.toArray(), downloadFilesSet.toArray().length, String[].class), local_Path);
-                            }
-
-                            break;
+                                break;
 
                             case "4":
                                 /**
@@ -378,6 +378,7 @@ public class FTPClient {
 
     /**
      * This method is used to save client credentials to `clientCredentials.json` file, if its a new client login.
+     *
      * @param hostName - hostname, can be (127.0.0.1) or any other.
      * @param userName - registered client user name.
      * @param password - password to connect to server.
@@ -386,20 +387,20 @@ public class FTPClient {
     private static void storeClientCredentials(String hostName, String userName, String password, String protocol) {
         logger.debug("starting functionality - Store new client credentials");
         boolean newClient = isNewClient(userName);
-        if(newClient){
-            try{
+        if (newClient) {
+            try {
                 ObjectMapper mapper = new ObjectMapper();
                 InputStream inputStream = new FileInputStream(new File("target\\classes\\clientCredentials.json"));
                 JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, ClientCredentials.class);
                 List<ClientCredentials> allClients = mapper.readValue(inputStream, type); // [obj, obj]
 
-                ClientCredentials newClientData = new ClientCredentials( userName, password, hostName, protocol);
+                ClientCredentials newClientData = new ClientCredentials(userName, password, hostName, protocol);
                 allClients.add(newClientData);
                 mapper.writeValue(new File("target\\classes\\clientCredentials.json"), allClients);
 
                 inputStream.close();
                 logger.info("new client credentials are stored.");
-            } catch (IOException e){
+            } catch (IOException e) {
                 logger.info("Error Occurred - error occurred while trying to store new user credentials.");
                 e.printStackTrace();
             }
@@ -409,19 +410,20 @@ public class FTPClient {
 
     /**
      * This method is used to check if client credentials are already present in the `clientCredentials.json` file
+     *
      * @param userName - registered client user name.
      * @return [boolean] - return true if credentials are not present else return false if client details are already saved.
      */
     private static boolean isNewClient(String userName) {
         logger.debug("starting functionality - checking if its a new client login.");
 
-        try{
+        try {
             ObjectMapper mapper = new ObjectMapper();
             InputStream inputStream = new FileInputStream(new File("target\\classes\\clientCredentials.json"));
             JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, ClientCredentials.class);
             List<ClientCredentials> clients = mapper.readValue(inputStream, type); // [obj, obj]
-            for(ClientCredentials cc : clients){
-                if(cc.getUserName().equals(userName)){
+            for (ClientCredentials cc : clients) {
+                if (cc.getUserName().equals(userName)) {
                     logger.info("Client details already saved.");
                     return false;
                 }

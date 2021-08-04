@@ -59,16 +59,17 @@ public class FTPConnection implements RemoteConnection {
 
     /**
      * This method is used to create new Directory on remote server.
+     *
      * @param dirName - name of the directory.
      * @return [boolean] - returns true if successfully created a directory on remote server, else return false.
      * @throws IOException - can throw exception while handling files.
      */
     @Override
     public boolean createNewDirectory(String dirName) throws IOException {
-        try{
+        try {
             return client.makeDirectory(dirName);
         } catch (SocketException e) {
-            System.out.println("Something went wrong, when trying to create directory \""+dirName+"\"\n" +
+            System.out.println("Something went wrong, when trying to create directory \"" + dirName + "\"\n" +
                     "Give valid Directory path/ name .");
         }
         return false;
@@ -77,7 +78,7 @@ public class FTPConnection implements RemoteConnection {
     //download a single file from remote server to local
     @Override
     public boolean downloadMultipleFiles(String[] remotePaths, String localPath) throws IOException {
-        System.out.println("Remote paths --> "+ remotePaths);
+        System.out.println("Remote paths --> " + remotePaths);
         try {
             for (String remotePath : remotePaths) {
                 downloadSingleFile(localPath, remotePath);
@@ -104,6 +105,7 @@ public class FTPConnection implements RemoteConnection {
 
     /**
      * This method is used to check if directory exists or not.
+     *
      * @param dirPath - the remote directory path.
      * @return [boolean] - returns true if exists else return false.
      * @throws FTPClientException - can throw IOException while handling files.
@@ -177,9 +179,10 @@ public class FTPConnection implements RemoteConnection {
 
     /**
      * This method is used to put a single file on the remote server, using FTP protocol.
+     *
      * @param localFilePath - this is the path on local system
-     * @param remotePath - this is the path on remote server.
-     * @throws IOException - can throw IOException, while handling files.
+     * @param remotePath    - this is the path on remote server.
+     * @throws IOException        - can throw IOException, while handling files.
      * @throws FTPClientException - throws this exception while checking if file exist or not opn remote server.
      */
     @Override
@@ -188,9 +191,9 @@ public class FTPConnection implements RemoteConnection {
         String remoteFilePath;
 
         File localFile = new File(localFilePath);
-        if(localFile.isFile()){
+        if (localFile.isFile()) {
             remoteFilePath = remotePath + "/" + localFile.getName();
-            if(checkDirectoryExists(remotePath)){
+            if (checkDirectoryExists(remotePath)) {
                 InputStream inputStream = new FileInputStream(localFile);
                 try {
                     client.setFileType(org.apache.commons.net.ftp.FTP.BINARY_FILE_TYPE);
@@ -200,15 +203,15 @@ public class FTPConnection implements RemoteConnection {
                 } finally {
                     inputStream.close();
                 }
-            if (uploaded) {
-                logger.info("file upload successful");
-                System.out.println("UPLOADED a file to: " + remoteFilePath );
-            } else {
-                logger.info("file upload Unsuccessful");
-                System.out.println("Error occurred when trying to upload the file: \""
+                if (uploaded) {
+                    logger.info("file upload successful");
+                    System.out.println("UPLOADED a file to: " + remoteFilePath);
+                } else {
+                    logger.info("file upload Unsuccessful");
+                    System.out.println("Error occurred when trying to upload the file: \""
                             + localFilePath + "\" to \"" + remoteFilePath + "\"");
-            }
-        } else {
+                }
+            } else {
                 logger.info("Error occurred - The Remote file path provided does not exist.");
                 System.out.println("Error: The Remote file path provided does not exist.\n");
             }
@@ -221,12 +224,13 @@ public class FTPConnection implements RemoteConnection {
     /**
      * This method is used to upload multiple files onto remote server.
      * This method
+     *
      * @param localPaths [Array] - these are the paths of all the files on local system, that user wants to upload
      * @param remotePath - this is the path on remote server, where user want to upload all those files.
      */
     @Override
-    public void uploadMultipleFiles(String[] localPaths, String remotePath){
-        System.out.println("local paths --> "+ localPaths);
+    public void uploadMultipleFiles(String[] localPaths, String remotePath) {
+        System.out.println("local paths --> " + localPaths);
         try {
             for (String localPath : localPaths) {
                 uploadSingleFile(localPath, remotePath);
@@ -249,16 +253,16 @@ public class FTPConnection implements RemoteConnection {
 
     @Override
     public boolean copyDirectory(String sourceDir, String desDir) throws FTPClientException, IOException {
-        if(checkDirectoryExists(sourceDir)) {
+        if (checkDirectoryExists(sourceDir)) {
             String tempFolder = System.getProperty("user.dir") + '\\' + "temp";
             File theDir = new File(tempFolder);
-            if (!theDir.exists()){
+            if (!theDir.exists()) {
                 theDir.mkdirs();
             }
             System.out.println("Working Directory = " + System.getProperty("user.dir"));
 
-            downloadDirectory( client.printWorkingDirectory() + sourceDir,tempFolder);
-            if(!checkDirectoryExists(desDir)) {
+            downloadDirectory(client.printWorkingDirectory() + sourceDir, tempFolder);
+            if (!checkDirectoryExists(desDir)) {
                 client.makeDirectory(desDir);
             }
             uploadDirectory(tempFolder + '\\' + sourceDir, desDir);
