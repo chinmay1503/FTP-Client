@@ -44,11 +44,7 @@ public interface RemoteConnection {
 
     int searchFilesWithExtension(String filePath, String extension) throws FTPClientException;
 
-    boolean downloadSingleFile(FTPClient ftpClient, String remoteFilePath, String savePath) throws IOException;
+    void downloadDirectory(String currentDir, String saveDir) throws IOException, FTPClientException;
 
-    void downloadDirectory(FTPClient ftpClient, String parentDir, String currentDir, String saveDir) throws IOException;
-
-    void uploadDirectory(FTPClient ftpClient, String remoteDirPath, String localParentDir, String remoteParentDir) throws IOException;
-
-    boolean uploadSingleFile(FTPClient ftpClient, String localFilePath, String remoteFilePath) throws IOException;
+    void uploadDirectory(String localParentDir, String remoteParentDir) throws IOException, FTPClientException;
 }

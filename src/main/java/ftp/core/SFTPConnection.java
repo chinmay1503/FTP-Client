@@ -270,23 +270,13 @@ public class SFTPConnection implements RemoteConnection {
     }
 
     @Override
-    public boolean downloadSingleFile(FTPClient ftpClient, String remoteFilePath, String savePath) throws IOException{
-        return false;
-    }
-
-    @Override
-    public void downloadDirectory(FTPClient ftpClient, String parentDir, String currentDir, String saveDir) throws IOException {
+    public void downloadDirectory(String currentDir, String saveDir) throws IOException, FTPClientException {
         return;
     }
 
     @Override
-    public void uploadDirectory(FTPClient ftpClient, String remoteDirPath, String localParentDir, String remoteParentDir) throws IOException {
+    public void uploadDirectory(String localParentDir, String remoteParentDir) throws IOException, FTPClientException {
         return;
-    }
-
-    @Override
-    public boolean uploadSingleFile(FTPClient ftpClient, String localFilePath, String remoteFilePath) throws IOException {
-        return false;
     }
 
 }

@@ -85,22 +85,6 @@ public class FTPConnection implements RemoteConnection {
 
     //download a single file from remote server to local
     @Override
-    public boolean downloadSingleFile(String localPath, String remotePath) throws IOException, FTPClientException {
-        OutputStream outputStream = null;
-        try {
-            String fileName = getFileNameFromRemote(remotePath);
-            File downloadToLocal = new File(localPath + File.separator + fileName);
-            outputStream = new BufferedOutputStream(new FileOutputStream(downloadToLocal));
-            return client.retrieveFile(remotePath, outputStream);
-        } finally {
-            if(outputStream != null) {
-                outputStream.close();
-            }
-        }
-    }
-
-    //download a single file from remote server to local
-    @Override
     public boolean downloadMultipleFiles(String[] remotePaths, String localPath) throws IOException {
         System.out.println("Remote paths --> "+ remotePaths);
         try {
@@ -273,11 +257,11 @@ public class FTPConnection implements RemoteConnection {
             }
             System.out.println("Working Directory = " + System.getProperty("user.dir"));
 
-            downloadDirectory(client, client.printWorkingDirectory(), client.printWorkingDirectory() + sourceDir,tempFolder);
+            downloadDirectory( client.printWorkingDirectory() + sourceDir,tempFolder);
             if(!checkDirectoryExists(desDir)) {
                 client.makeDirectory(desDir);
             }
-            uploadDirectory(client, client.printWorkingDirectory(), tempFolder + '\\' + sourceDir, desDir);
+            uploadDirectory(tempFolder + '\\' + sourceDir, desDir);
             FileUtils.deleteDirectory(new File(tempFolder));
             return true;
         }
@@ -286,13 +270,14 @@ public class FTPConnection implements RemoteConnection {
     }
 
     @Override
-    public void downloadDirectory(FTPClient ftpClient, String parentDir, String currentDir, String saveDir) throws IOException {
+    public void downloadDirectory(String currentDir, String saveDir) throws IOException, FTPClientException {
+        String parentDir = client.printWorkingDirectory();
         String dirToList = parentDir;
         if (!currentDir.equals("")) {
             dirToList += "/" + currentDir;
         }
 
-        FTPFile[] subFiles = ftpClient.listFiles(dirToList);
+        FTPFile[] subFiles = client.listFiles(dirToList);
 
         if (subFiles != null && subFiles.length > 0) {
             for (FTPFile aFile : subFiles) {
@@ -325,12 +310,10 @@ public class FTPConnection implements RemoteConnection {
                     }
 
                     // download the sub directory
-                    downloadDirectory(ftpClient, dirToList, currentFileName,
-                            saveDir);
+                    downloadDirectory(currentFileName, saveDir);
                 } else {
                     // download the file
-                    boolean success = downloadSingleFile(ftpClient, filePath,
-                            newDirPath);
+                    boolean success = downloadSingleFile(newDirPath, filePath);
                     if (success) {
                         System.out.println("DOWNLOADED the file: " + filePath);
                     } else {
@@ -343,8 +326,8 @@ public class FTPConnection implements RemoteConnection {
     }
 
     @Override
-    public boolean downloadSingleFile(FTPClient ftpClient, String remoteFilePath, String savePath) throws IOException {
-        File downloadFile = new File(savePath);
+    public boolean downloadSingleFile(String localPath, String remoteFilePath) throws IOException, FTPClientException {
+        File downloadFile = new File(localPath);
 
         File parentDir = downloadFile.getParentFile();
         if (!parentDir.exists()) {
@@ -354,8 +337,8 @@ public class FTPConnection implements RemoteConnection {
         OutputStream outputStream = new BufferedOutputStream(
                 new FileOutputStream(downloadFile));
         try {
-            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-            return ftpClient.retrieveFile(remoteFilePath, outputStream);
+            client.setFileType(FTP.BINARY_FILE_TYPE);
+            return client.retrieveFile(remoteFilePath, outputStream);
         } catch (IOException ex) {
             throw ex;
         } finally {
@@ -403,8 +386,8 @@ public class FTPConnection implements RemoteConnection {
     }
 
     @Override
-    public void uploadDirectory(FTPClient ftpClient, String remoteDirPath, String localParentDir, String remoteParentDir) throws IOException {
-
+    public void uploadDirectory(String localParentDir, String remoteParentDir) throws IOException, FTPClientException {
+        String remoteDirPath = client.printWorkingDirectory();
         System.out.println("LISTING directory: " + localParentDir);
 
         File localDir = new File(localParentDir);
@@ -422,17 +405,10 @@ public class FTPConnection implements RemoteConnection {
                     // upload the file
                     String localFilePath = item.getAbsolutePath();
                     System.out.println("About to upload the file: " + localFilePath);
-                    boolean uploaded = uploadSingleFile(ftpClient, localFilePath, remoteFilePath);
-                    if (uploaded) {
-                        System.out.println("UPLOADED a file to: "
-                                + remoteFilePath);
-                    } else {
-                        System.out.println("COULD NOT upload the file: "
-                                + localFilePath);
-                    }
+                    uploadSingleFile(localFilePath, remoteFilePath);
                 } else {
                     // create directory on the server
-                    boolean created = ftpClient.makeDirectory(remoteFilePath);
+                    boolean created = client.makeDirectory(remoteFilePath);
                     if (created) {
                         System.out.println("CREATED the directory: "
                                 + remoteFilePath);
@@ -448,24 +424,11 @@ public class FTPConnection implements RemoteConnection {
                     }
 
                     localParentDir = item.getAbsolutePath();
-                    uploadDirectory(ftpClient, remoteDirPath, localParentDir,
-                            parent);
+                    uploadDirectory(localParentDir, parent);
                 }
             }
         }
     }
 
-    @Override
-    public boolean uploadSingleFile(FTPClient ftpClient, String localFilePath, String remoteFilePath) throws IOException {
-        File localFile = new File(localFilePath);
-
-        InputStream inputStream = new FileInputStream(localFile);
-        try {
-            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-            return ftpClient.storeFile(remoteFilePath, inputStream);
-        } finally {
-            inputStream.close();
-        }
-    }
 }
 
