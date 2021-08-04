@@ -35,5 +35,5 @@ public interface RemoteConnection {
 
     boolean renameRemoteFile(String oldName, String newName) throws FTPClientException;
 
-     boolean copyDirectory(String toCopy, String newDir) throws FTPClientException;
+    boolean copyDirectory(String toCopy, String newDir) throws FTPClientException;
 }

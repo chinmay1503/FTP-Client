@@ -11,6 +11,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static ftp.core.FTPUtils.getFileNameFromRemote;
+
 /**
  * FTPConnection class - this class has all the method implementations that is used by FTPClient.
  */

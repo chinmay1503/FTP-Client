@@ -8,6 +8,9 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Vector;
 
 import static ftp.core.FTPUtils.getFileNameFromRemote;
@@ -114,12 +117,19 @@ public class SFTPConnection implements RemoteConnection {
 
     @Override
     public boolean checkFileExists(String filePath) throws FTPClientException {
-        return false;
+        try {
+            Vector files = sftpChannel.ls(filePath);
+            return files.size() == 1;
+       } catch (SftpException e) {
+            logger.error(filePath + " not found");
+            return false;
+       }
     }
 
     @Override
     public boolean checkLocalDirectoryExists(String dirPath) throws FileNotFoundException {
-        return false;
+        Path path = Paths.get(dirPath);
+        return Files.exists(path);
     }
 
     @Override
@@ -150,7 +160,7 @@ public class SFTPConnection implements RemoteConnection {
     }
 
     @Override
-    public boolean downloadSingleFile(String remotePath, String localPath) throws IOException, FTPClientException {
+    public boolean downloadSingleFile(String localPath, String remotePath) throws IOException, FTPClientException {
         try {
             String fileName = getFileNameFromRemote(remotePath);
             String outputLocation = localPath + File.separator + fileName;
@@ -163,7 +173,15 @@ public class SFTPConnection implements RemoteConnection {
     }
 
     @Override
-    public boolean downloadMultipleFiles(String[] localPaths, String remotePath) throws IOException {
+    public boolean downloadMultipleFiles(String[] remotePaths, String localPath) throws IOException {
+        System.out.println("Remote paths --> "+ remotePaths);
+        try {
+            for (String remotePath : remotePaths) {
+                downloadSingleFile(localPath, remotePath);
+            }
+        } catch (IOException | FTPClientException e) {
+            System.out.println("-- Error while downloading files from Remote server --");
+        }
         return false;
     }
 }

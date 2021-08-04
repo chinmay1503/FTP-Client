@@ -123,26 +123,44 @@ public class FTPClient {
 
                         case "3":
                             System.out.println("3. Get multiple file from remote server\n");
-                            System.out.println("Enter Destination to download to: ");
-                            String local_Path = scan.nextLine();
+                            String userOptions = getInputFromUser(scan, "Would you like to download the contents of the entire directory? y/n\n", "userOption");
 
-                            Set downloadFilesSet = new HashSet<String>();
-                            boolean downloadMore;
+                            //Call method from case 11 to download entire directory
+                            if("y".equalsIgnoreCase(userOptions)) {
+                                System.out.println("Enter Destination to download to: ");
 
-                            do {
-                                downloadMore = false;
-                                System.out.println("Enter remote path, where you wish to download from: ");
-                                String remote_Path = scan.nextLine();
+                            }
+                            //Prompt and download each file from the remote path
+                            else {
+                                System.out.println("Enter Destination to download to: ");
+                                String local_Path = scan.nextLine();
 
-                                downloadFilesSet.add(remote_Path);
+                                Set <String> downloadFilesSet = new HashSet<>();
+                                boolean downloadMore;
 
-                                System.out.println("Do you want to upload another File ? (y/n)");
-                                String downloadMoreFiles = scan.nextLine();
-                                if (downloadMoreFiles.equals("y")) {
-                                    downloadMore = true;
-                                }
-                            } while (downloadMore);
-                            remoteConnection.downloadMultipleFiles(Arrays.copyOf(downloadFilesSet.toArray(), downloadFilesSet.toArray().length, String[].class), local_Path);
+                                do {
+                                    downloadMore = false;
+                                    do {
+                                        System.out.println("Enter remote path, where you wish to download from: ");
+                                        String remote_Path = scan.nextLine();
+                                        promptForRemoteFile = remoteConnection.checkFileExists(remote_Path);
+
+                                        if (!promptForRemoteFile) {
+                                            System.out.println("-- Error: could not locate Directory with the name " + remote_Path +
+                                                    " in remote server --");
+                                        } else {
+                                            downloadFilesSet.add(remote_Path);
+                                        }
+                                    } while(!promptForRemoteFile);
+
+                                    System.out.println("Do you want to upload another File ? (y/n)");
+                                    String downloadMoreFiles = scan.nextLine();
+                                    if ("y".equalsIgnoreCase(downloadMoreFiles)) {
+                                        downloadMore = true;
+                                    }
+                                } while (downloadMore);
+                                remoteConnection.downloadMultipleFiles(Arrays.copyOf(downloadFilesSet.toArray(), downloadFilesSet.toArray().length, String[].class), local_Path);
+                            }
 
                             break;
 
@@ -192,7 +210,7 @@ public class FTPClient {
                             do {
                                 uploadMore = false;
                                 System.out.println("Enter Local file path, that you want to upload");
-                                local_Path = scan.nextLine();
+                                String local_Path = scan.nextLine();
 
                                 uploadFilesSet.add(local_Path);
 
@@ -256,6 +274,12 @@ public class FTPClient {
                             }
                             break;
 
+                        case "11.":
+                            System.out.println("11. Rename file on local machine\n");
+                            System.out.println("coming soon ... \n");
+
+                            break;
+
                         case "12":
                             System.out.println("12. Copy directory from remote server\n");
                             System.out.println("coming soon ... \n");
@@ -269,11 +293,6 @@ public class FTPClient {
                             } else {
                                 System.out.println("-- Error: could not delete file in remote server --");
                             }
-                            break;
-
-                        case "11.":
-                            System.out.println("11. Rename file on local machine\n");
-
                             break;
 
                         case "14":
