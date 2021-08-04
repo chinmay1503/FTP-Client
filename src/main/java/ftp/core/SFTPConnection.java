@@ -71,7 +71,6 @@ public class SFTPConnection implements RemoteConnection {
         try {
             logger.debug("Going to delete file :[" + filePath + "]");
             sftpChannel.rm(filePath);
-            logger.debug("File deleted successfully.");
             return true;
         } catch (SftpException e) {
             throw new FTPClientException(e);
