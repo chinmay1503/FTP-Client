@@ -87,6 +87,7 @@ public class FTPClient {
 
                     switch (userOption) {
                         case "1":
+                            System.out.println("1. list directories & files on remote server\n");
                             remoteConnection.listCurrentDirectory();
                             break;
 
@@ -219,8 +220,10 @@ public class FTPClient {
                             System.out.println("13. Delete file from remote server\n");
                             String filePath = getInputFromUser(scan, "Please enter the file path to the remote directory you would like to delete", "filePath");
                             if (remoteConnection.deleteFile(filePath)) {
+                                logger.debug("File deleted successfully.");
                                 System.out.println("File deleted Successfully. \n");
                             } else {
+                                logger.debug("-- Error: could not delete file in remote server --");
                                 System.out.println("-- Error: could not delete file in remote server --");
                             }
                             break;

@@ -125,6 +125,7 @@ public class FTPConnection implements RemoteConnection {
     @Override
     public boolean deleteFile(String filePath) throws FTPClientException {
         try {
+            logger.debug("Going to delete file :[" + filePath + "]");
             return client.deleteFile(filePath);
         } catch (IOException e) {
             throw new FTPClientException(e);
