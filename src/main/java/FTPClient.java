@@ -276,12 +276,18 @@ public class FTPClient {
                                 } else {
                                     System.out.println("Failed to rename: " + oldName);
                                 }
-                                break;
 
                             case "12":
-                                System.out.println("12. Copy directory from remote server\n");
-                                System.out.println("coming soon ... \n");
-                                break;
+                            System.out.println("12. Copy directories on remote server\n");
+                            String sourceDir = getInputFromUser(scan,"Enter name of source directory to copy", "sourceDir");
+                            String desDir = getInputFromUser(scan, "Enter name of new copy", "desDir");
+                            while (sourceDir.equals(desDir)) {
+                                System.out.println("Copy cannot have the same name");
+                                sourceDir = getInputFromUser(scan,"Enter name of directory to copy", "sourceDir");
+                                desDir = getInputFromUser(scan, "Enter name of new copy", "desDir");
+                            }
+                            remoteConnection.copyDirectory(sourceDir, desDir);
+                            break;
 
                             case "13":
                                 System.out.println("13. Delete file from remote server\n");
