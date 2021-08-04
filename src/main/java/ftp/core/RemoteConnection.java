@@ -12,8 +12,6 @@ public interface RemoteConnection {
 
     boolean createNewDirectory(String dirName) throws FTPClientException, IOException;
 
-    int getClientReplyCode() throws FTPClientException;
-
     void getCurrentRemoteDirectory() throws FTPClientException;
 
     void listCurrentDirectory() throws FTPClientException;

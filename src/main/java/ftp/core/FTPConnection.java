@@ -74,15 +74,6 @@ public class FTPConnection implements RemoteConnection {
         return false;
     }
 
-    /**
-     * This method is used to retrieve a reply code of current FTP client connection.
-     * @return [int] - reply code of current client connection.
-     */
-    @Override
-    public int getClientReplyCode() {
-        return client.getReplyCode();
-    }
-
     //download a single file from remote server to local
     @Override
     public boolean downloadMultipleFiles(String[] remotePaths, String localPath) throws IOException {

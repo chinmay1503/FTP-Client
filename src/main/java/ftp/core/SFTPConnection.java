@@ -54,11 +54,6 @@ public class SFTPConnection implements RemoteConnection {
     }
 
     @Override
-    public int getClientReplyCode() throws FTPClientException {
-        return 0;
-    }
-
-    @Override
     public void getCurrentRemoteDirectory() throws FTPClientException {
         try {
             System.out.println(sftpChannel.pwd());
