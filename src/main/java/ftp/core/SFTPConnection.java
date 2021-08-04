@@ -2,13 +2,11 @@ package ftp.core;
 
 import com.jcraft.jsch.*;
 
+import org.apache.commons.net.ftp.FTPClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Vector;
 
@@ -162,7 +160,7 @@ public class SFTPConnection implements RemoteConnection {
     }
 
     @Override
-    public boolean copyDirectory(String toCopy, String newDir) throws FTPClientException {
+    public boolean copyDirectory(String toCopy, String newDir) throws FTPClientException, IOException {
         return false;
     }
 
@@ -219,4 +217,25 @@ public class SFTPConnection implements RemoteConnection {
         }
         return result.size();
     }
+
+    @Override
+    public boolean downloadSingleFile(FTPClient ftpClient, String remoteFilePath, String savePath) throws IOException{
+        return false;
+    }
+
+    @Override
+    public void downloadDirectory(FTPClient ftpClient, String parentDir, String currentDir, String saveDir) throws IOException {
+        return;
+    }
+
+    @Override
+    public void uploadDirectory(FTPClient ftpClient, String remoteDirPath, String localParentDir, String remoteParentDir) throws IOException {
+        return;
+    }
+
+    @Override
+    public boolean uploadSingleFile(FTPClient ftpClient, String localFilePath, String remoteFilePath) throws IOException {
+        return false;
+    }
+
 }
