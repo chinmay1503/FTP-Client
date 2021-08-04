@@ -37,7 +37,9 @@ public class FTPClient {
                 "11. Rename file on local machine\n" +
                 "12. Copy directories on remote server\n" +
                 "13. Delete file from remote server\n" +
-                "14. Log off from the Server\n" +
+                "14. Search file on remote server\n" +
+                "15. Search file on local machine\n" +
+                "16. Log off from the Server\n" +
                 "\n" );
     }
 
@@ -229,7 +231,32 @@ public class FTPClient {
                             break;
 
                         case "14":
-                            System.out.println("14. Log off from the Server\n");
+                            System.out.println("14. Search file on remote server\n");
+                            String searchFilePath = getInputFromUser(scan, "Please enter the folder path to the remote directory", "searchFilePath");
+                            String searchOption = getInputFromUser(scan, "1. Search File With Keyword\n" +
+                                    "2. Search File ending with Extension\n" +
+                                    "Please Choose Options \"1 or 2\"", "searchOption");
+                            if (searchOption.equals("1")) {
+                                String keyword = getInputFromUser(scan, "Enter Search Keyword", "keyword");
+                                int fileCount = remoteConnection.searchFilesWithKeyword(searchFilePath, keyword);
+                                logger.info("The number of files found with keyword :[" + keyword + "] are [" + fileCount + "]");
+                            } else if (searchOption.equals("2")) {
+                                String extension = getInputFromUser(scan, "Enter Search File Extension", "extension");
+                                int fileCount = remoteConnection.searchFilesWithExtension(searchFilePath, extension);
+                                logger.info("The number of files found with extension :[" + extension + "] are [" + fileCount + "]");
+                            } else {
+                                logger.debug("-- Error: Invalid Search Option Selected! --");
+                                System.out.println("-- Error: Invalid Search Option Selected! --");
+                            }
+                            break;
+
+                        case "15":
+                            System.out.println("15. Search file on local machine\n");
+                            System.out.println("coming soon ... \n");
+                            break;
+
+                        case "16":
+                            System.out.println("16. Log off from the Server\n");
                             remoteConnection.disconnect();
                             break;
 
