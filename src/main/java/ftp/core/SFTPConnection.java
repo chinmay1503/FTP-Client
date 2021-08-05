@@ -147,7 +147,16 @@ public class SFTPConnection implements RemoteConnection {
 
     @Override
     public void uploadMultipleFiles(String[] localPaths, String remotePath) {
-
+        System.out.println("local paths --> " + localPaths);
+        try {
+            for (String localPath : localPaths) {
+                uploadSingleFile(localPath, remotePath);
+            }
+            logger.info("All files uploaded successfully");
+        } catch (IOException | FTPClientException e) {
+            logger.info("Error occurred - file upload Unsuccessful - Error while uploading files to Remote server");
+            System.out.println("-- Error while uploading files to Remote server --");
+        }
     }
 
     @Override

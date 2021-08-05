@@ -55,18 +55,16 @@ public class FTPClient {
     public static void showConnectionOptions(String promptDialog) {
 
         try {
+            logger.info("creating clientCredentials.json file if it does not exsist");
             File myObj = new File("ClientCredentials.json");
             if (myObj.createNewFile()) {
-                System.out.println("File created: " + myObj.getName());
                 FileWriter myWriter = new FileWriter("ClientCredentials.json");
                 myWriter.write("[]");
                 myWriter.close();
-                System.out.println("Successfully wrote to the file.");
-            } else {
-                System.out.println("File already exists.");
+                logger.info("created the file");
             }
         } catch (IOException e) {
-            System.out.println("An error occurred.");
+            logger.info("Error occurred while creating the file");
             e.printStackTrace();
         }
 
@@ -497,6 +495,9 @@ public class FTPClient {
                 aList.add(a1);
                 System.out.println(i + ". userName: " + cc.getUserName() + "\tserver: " + cc.getServer() + "\tProtocol: " + cc.getProtocol());
                 i = i + 1;
+            }
+            if(i == 1){
+                System.out.println("Sorry, No saved Connections. You will have to enter all Credentials (choose below option)");
             }
             System.out.println(i + ". None of the above. Enter New Credentials");
             Scanner scan = new Scanner(System.in);
