@@ -52,7 +52,12 @@ public class FTPClient {
      * This method is used to provide connection options for the user.
      * @param promptDialog [String] - Prompt to display before providing the options.
      */
-    public static void showConnectionOptions(String promptDialog){
+    public static void showConnectionOptions(String promptDialog) throws IOException {
+
+        File file = new File("./testFTPCLIENT.json");
+        System.out.println(file.createNewFile());
+        System.out.println("file created!!");
+
         boolean repeatConnectOptions = false;
         Scanner scan = new Scanner(System.in);
         logger.debug("Prompting the user to select connect options.");
