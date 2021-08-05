@@ -6,7 +6,7 @@ import java.io.IOException;
 
 public interface RemoteConnection {
 
-    boolean connect(String hostName, String userName, String password) throws FTPClientException;
+    int connect(String hostName, String userName, String password) throws FTPClientException;
 
     void disconnect() throws FTPClientException;
 

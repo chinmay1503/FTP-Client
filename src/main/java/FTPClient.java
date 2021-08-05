@@ -19,6 +19,10 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 public class FTPClient {
 
     private static final Logger logger = LogManager.getLogger(FTPClient.class);
+    private static String hostName = "";
+    private static String protocol = "";
+    private static String userName = "";
+    private static String password = "";
 
     /**
      * This method is used to print the options for user's to choose from.
@@ -45,48 +49,131 @@ public class FTPClient {
     }
 
     /**
+     * This method is used to provide connection options for the user.
+     * @param promptDialog [String] - Prompt to display before providing the options.
+     */
+    public static void showConnectionOptions(String promptDialog) {
+
+        try {
+            logger.info("creating clientCredentials.json file if it does not exsist");
+            File myObj = new File("ClientCredentials.json");
+            if (myObj.createNewFile()) {
+                FileWriter myWriter = new FileWriter("ClientCredentials.json");
+                myWriter.write("[]");
+                myWriter.close();
+                logger.info("created the file");
+            }
+        } catch (IOException e) {
+            logger.info("Error occurred while creating the file");
+            e.printStackTrace();
+        }
+
+        boolean repeatConnectOptions = false;
+        Scanner scan = new Scanner(System.in);
+        logger.debug("Prompting the user to select connect options.");
+
+        System.out.println(promptDialog+"\n");
+        String connectOptions = getInputFromUser(scan, "1. Use saved Connections \t"
+                + " 2. Enter New user Credentials and Save them \t"
+                + " 3. Exit\n"
+                + "Enter your Option", "connectOptions");
+        do {
+            switch (connectOptions) {
+                case "1":
+                    System.out.println("List of all saved connections (Choose from below connections):\n");
+                    ArrayList<String> selectedUserDetails = listAllUserCredentials();
+                    if (selectedUserDetails.isEmpty()) {
+                        connectOptions = "2";
+                        repeatConnectOptions = true;
+                    } else {
+                        userName = selectedUserDetails.get(0);
+                        hostName = selectedUserDetails.get(2);
+                        protocol = selectedUserDetails.get(3);
+                        System.out.println("Connecting to:\nUserName: " + userName + "\tserver: " + hostName + "\tProtocol: " + protocol);
+                        password = getInputFromUser(scan, "Password", "Password");
+                    }
+                    break;
+
+                case "2":
+                    System.out.println("HostName: (Eg: 127.0.0.1)");
+                    hostName = scan.nextLine();
+                    if (isNullOrEmpty(hostName))
+                        hostName = "127.0.0.1";
+
+                    userName = getInputFromUser(scan, "UserName", "UserName");
+                    password = getInputFromUser(scan, "Password", "Password");
+
+                    String protocolNum = getInputFromUser(scan, "Select Protocol: 1. FTP \t 2. SFTP", "protocolNum");
+                    if (protocolNum.equals("1"))
+                        protocol = "FTP";
+                    else
+                        protocol = "SFTP";
+
+                    repeatConnectOptions = false;
+                    break;
+
+                case "3":
+                    System.exit(0);
+                    break;
+
+                default:
+                    connectOptions = getInputFromUser(scan,
+                            "please enter Correct option, choose form following.\n"
+                                    + "1. Use saved Connections \t 2. Enter New user Credentials and Save them\n"
+                                    + "Enter your Option",
+                            "connectOptions");
+                    repeatConnectOptions = true;
+                    break;
+            }
+        }while (repeatConnectOptions);
+
+    }
+
+    /**
      * Main method for FTPClient class.
      *
      * @throws Exception This method can throw many Exception's. so mentioning parent Exception.
      */
     public static void main(String[] args) throws Exception {
 
+        String userOption;
+        boolean repeatProcess = true;
+        boolean connected = false;
+        int connected_status;
+        RemoteConnection remoteConnection = null;
+
         logger.debug("Main method Execution -> Starts");
 
-
-        String userOption;
         try (Scanner scan = new Scanner(System.in)) {
-            boolean repeatProcess = true;
 
-            System.out.println("HostName: (Eg: 127.0.0.1)");
-            String hostName = scan.nextLine();
-            if (isNullOrEmpty(hostName))
-                hostName = "127.0.0.1";
-            String userName = getInputFromUser(scan, "UserName", "UserName");
-            String password = getInputFromUser(scan, "Password", "Password");
+            showConnectionOptions("How do you want to connect to remote server ?");
 
-            System.out.println("Select Protocol: 1. FTP \t 2. SFTP");
-            String protocol;
-            String protocolNum = scan.nextLine();
-            if (protocolNum.equals("1"))
-                protocol = "FTP";
-            else
-                protocol = "SFTP";
-
+            System.out.println("Connecting to Remote Server...");
             RemoteConnectionFactory remoteConnectionFactory = new RemoteConnectionFactory();
-            RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(protocol);
+            remoteConnection = remoteConnectionFactory.getInstance(protocol);
+            do{
+                connected_status = remoteConnection.connect(hostName, userName, password);
 
-            boolean connected = remoteConnection.connect(hostName, userName, password);
-            try {
-                if (connected) {
-                    storeClientCredentials(hostName, userName, password, protocol);
-                    System.out.println("\n--- Connected to Remote FTP Server ---\n");
-                    showOptions();
+                if(connected_status == 1){
+                    connected = true;
+                } else if(connected_status == 0){
+                    connected = false;
+                    showConnectionOptions("Try Other options");
+                } else{
+                    System.exit(0);
+                }
+            } while (!connected);
 
-                    // Provide respective functionality to user, based on their choice.
-                    while (repeatProcess) {
-                        System.out.println("Choose your Option : ");
-                        userOption = scan.nextLine();
+
+            if (connected) {
+                storeClientCredentials(hostName, userName, password, protocol);
+                System.out.println("\n--- Connected to Remote FTP Server ---\n");
+                showOptions();
+
+                // Provide respective functionality to user, based on their choice.
+                while (repeatProcess) {
+                    System.out.println("Choose your Option : ");
+                    userOption = scan.nextLine();
 
                         switch (userOption) {
                             case "1":
@@ -191,11 +278,9 @@ public class FTPClient {
 
                                 System.out.println("5. Put file onto remote server\n");
 
-                                System.out.println("Enter Local file path, that you want to upload");
-                                String localFilePath = scan.nextLine();
-                                System.out.println("Enter Destination");
-                                String remotePath = scan.nextLine();
-                                remoteConnection.uploadSingleFile(localFilePath, remotePath);
+                            String localFilePath = getInputFromUser(scan, "Enter Local file path, that you want to upload", "localFilePath");
+                            String remotePath = getInputFromUser(scan, "Enter Destination", "remotePath");
+                            remoteConnection.uploadSingleFile(localFilePath, remotePath);
 
                                 logger.debug("End of functionality - Put file onto remote server");
                                 break;
@@ -205,26 +290,36 @@ public class FTPClient {
 
                                 System.out.println("6. Put multiple files on remote server\n");
 
-                                System.out.println("Enter Destination");
-                                String remote_Path = scan.nextLine();
+                            String remote_Path = getInputFromUser(scan, "Enter Destination", "remote_Path");
 
-                                Set uploadFilesSet = new HashSet<String>();
-                                boolean uploadMore;
+                            Set<String> uploadFilesSet = new HashSet<>();
+                            boolean uploadMore;
+                            boolean isValidPath;
+                            String uploadMoreFiles;
 
-                                do {
-                                    uploadMore = false;
-                                    System.out.println("Enter Local file path, that you want to upload");
-                                    String local_Path = scan.nextLine();
+                            do {
+                                uploadMore = false;
 
+                                String local_Path = getInputFromUser(scan, "Enter Local file path, that you want to upload", "local_Path");
+                                File localFile = new File(local_Path);
+                                if(localFile.isFile()) {
                                     uploadFilesSet.add(local_Path);
+                                    isValidPath = true;
+                                }else {
+                                    System.out.println("Error: The local path provided is not valid.\n");
+                                    isValidPath = false;
+                                }
+                                if(isValidPath) {
+                                    uploadMoreFiles = getInputFromUser(scan, "Do you want to upload another File ? (y/n)", "uploadMoreFiles");
+                                } else {
+                                    uploadMoreFiles = getInputFromUser(scan, "Try again? (y/n)", "uploadMoreFiles");
+                                }
 
-                                    System.out.println("Do you want to upload another File ? (y/n)");
-                                    String uploadMoreFiles = scan.nextLine();
-                                    if (uploadMoreFiles.equals("y")) {
-                                        uploadMore = true;
-                                    }
-                                } while (uploadMore);
-                                remoteConnection.uploadMultipleFiles(Arrays.copyOf(uploadFilesSet.toArray(), uploadFilesSet.toArray().length, String[].class), remote_Path);
+                                if (uploadMoreFiles.equals("y")) {
+                                    uploadMore = true;
+                                }
+                            } while (uploadMore);
+                            remoteConnection.uploadMultipleFiles(Arrays.copyOf(uploadFilesSet.toArray(), uploadFilesSet.toArray().length, String[].class), remote_Path);
 
                                 logger.debug("End of functionality - Put multiple files on remote server");
                                 break;
@@ -232,26 +327,24 @@ public class FTPClient {
                             case "7":
                                 logger.debug("starting functionality - Create New Directory on Remote Server");
 
-                                System.out.println("7. Create New Directory on Remote Server\n");
-                                boolean tryCreatingDirAgain;
-                                do {
-                                    tryCreatingDirAgain = false;
-                                    System.out.println("Enter Directory Name: (relative path or absolute path)");
-                                    String dirName = scan.nextLine();
-                                    boolean newDirStatus = remoteConnection.createNewDirectory(dirName);
-                                    if (newDirStatus) {
-                                        logger.info("Directory created Successfully");
-                                        System.out.println("* Directory created Successfully. *\n");
-                                    } else {
-                                        logger.info("Error occurred - could not create New Directory in remote server");
-                                        System.out.println("-- Error: could not create New Directory in remote server --\n" +
-                                                "Directory may already exist. Do you want try creating Directory again ? (y/n)");
-                                        String tryAgain = scan.nextLine();
-                                        if (tryAgain.equals("y")) {
-                                            tryCreatingDirAgain = true;
-                                        }
+                            System.out.println("7. Create New Directory on Remote Server\n");
+                            boolean tryCreatingDirAgain;
+                            do {
+                                tryCreatingDirAgain = false;
+                                String dirName = getInputFromUser(scan, "Enter Directory Name: (relative path or absolute path)", "dirName");
+                                boolean newDirStatus = remoteConnection.createNewDirectory(dirName);
+                                if (newDirStatus) {
+                                    logger.info("Directory created Successfully");
+                                    System.out.println("* Directory created Successfully. *\n");
+                                } else {
+                                    logger.info("Error occurred - could not create New Directory in remote server");
+                                    System.out.println("-- Error: could not create New Directory in remote server --\n");
+                                    String tryAgain = getInputFromUser(scan, "Directory may already exist. Do you want try creating Directory again ? (y/n)", "tryAgain");
+                                    if (tryAgain.equals("y")) {
+                                        tryCreatingDirAgain = true;
                                     }
-                                } while (tryCreatingDirAgain);
+                                }
+                            } while (tryCreatingDirAgain);
 
                                 logger.debug("End of functionality - Create New Directory on Remote Server");
                                 break;
@@ -374,6 +467,49 @@ public class FTPClient {
             }
             logger.debug("Main Method Execution -> Ends");
         }
+
+    /**
+     * This function prints all saved connections on console. and prompts user to select the connection details,
+     * that the user wants to use to connect to the remote server.
+     *
+     * @return selectedConnectionDetails [ArrayList<String>]  -
+     *              A list of selected connection information is returned.
+     */
+    private static ArrayList<String> listAllUserCredentials() {
+        ArrayList<ArrayList<String> > aList =
+                new ArrayList<>();
+        int userIndex = 0;
+        int i = 1;
+        try{
+            ObjectMapper mapper = new ObjectMapper();
+            InputStream inputStream = new FileInputStream("clientCredentials.json");
+            JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, ClientCredentials.class);
+            List<ClientCredentials> allClients = mapper.readValue(inputStream, type); // [obj, obj]
+
+            for(ClientCredentials cc : allClients){
+                ArrayList<String> a1 = new ArrayList<>();
+                a1.add(cc.getUserName());
+                a1.add(cc.getPassword());
+                a1.add(cc.getServer());
+                a1.add(cc.getProtocol());
+                aList.add(a1);
+                System.out.println(i + ". userName: " + cc.getUserName() + "\tserver: " + cc.getServer() + "\tProtocol: " + cc.getProtocol());
+                i = i + 1;
+            }
+            if(i == 1){
+                System.out.println("Sorry, No saved Connections. You will have to enter all Credentials (choose below option)");
+            }
+            System.out.println(i + ". None of the above. Enter New Credentials");
+            Scanner scan = new Scanner(System.in);
+            userIndex = Integer.parseInt(getInputFromUser(scan, "\nEnter Option", "userIndex"));
+            inputStream.close();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+        if(userIndex == i){
+            return new ArrayList<>();
+        }
+        return aList.get(userIndex - 1);
     }
 
     /**
@@ -390,13 +526,13 @@ public class FTPClient {
         if (newClient) {
             try {
                 ObjectMapper mapper = new ObjectMapper();
-                InputStream inputStream = new FileInputStream(new File("target\\classes\\clientCredentials.json"));
+                InputStream inputStream = new FileInputStream("clientCredentials.json");
                 JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, ClientCredentials.class);
                 List<ClientCredentials> allClients = mapper.readValue(inputStream, type); // [obj, obj]
 
                 ClientCredentials newClientData = new ClientCredentials(userName, password, hostName, protocol);
                 allClients.add(newClientData);
-                mapper.writeValue(new File("target\\classes\\clientCredentials.json"), allClients);
+                mapper.writeValue(new File("clientCredentials.json"), allClients);
 
                 inputStream.close();
                 logger.info("new client credentials are stored.");
@@ -419,7 +555,7 @@ public class FTPClient {
 
         try {
             ObjectMapper mapper = new ObjectMapper();
-            InputStream inputStream = new FileInputStream(new File("target\\classes\\clientCredentials.json"));
+            InputStream inputStream = new FileInputStream("clientCredentials.json");
             JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, ClientCredentials.class);
             List<ClientCredentials> clients = mapper.readValue(inputStream, type); // [obj, obj]
             for (ClientCredentials cc : clients) {
