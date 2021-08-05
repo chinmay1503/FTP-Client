@@ -125,6 +125,7 @@ public class FTPClient {
         boolean repeatProcess = true;
         boolean connected = false;
         int connected_status;
+        RemoteConnection remoteConnection = null;
 
         logger.debug("Main method Execution -> Starts");
 
@@ -134,7 +135,7 @@ public class FTPClient {
 
             System.out.println("Connecting to Remote Server...");
             RemoteConnectionFactory remoteConnectionFactory = new RemoteConnectionFactory();
-            RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(protocol);
+            remoteConnection = remoteConnectionFactory.getInstance(protocol);
             do{
                 connected_status = remoteConnection.connect(hostName, userName, password);
 
@@ -451,7 +452,6 @@ public class FTPClient {
             }
             logger.debug("Main Method Execution -> Ends");
         }
-    }
 
     /**
      * This function prints all saved connections on console. and prompts user to select the connection details,

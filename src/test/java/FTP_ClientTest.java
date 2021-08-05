@@ -54,7 +54,11 @@ public class FTP_ClientTest {
     public static RemoteConnection getRemoteConnectionObject(ClientCredentials clientCredentials) throws FTPClientException {
         RemoteConnectionFactory remoteConnectionFactory = new RemoteConnectionFactory();
         RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(clientCredentials.getProtocol());
-        boolean connected = remoteConnection.connect(clientCredentials.getServer(), clientCredentials.getUserName(), clientCredentials.getPassword());
+        boolean connected = false;
+        int connected_value = remoteConnection.connect(clientCredentials.getServer(), clientCredentials.getUserName(), clientCredentials.getPassword());
+        if(connected_value == 1){
+            connected = true;
+        }
         assertTrue(connected);
         return remoteConnection;
     }
