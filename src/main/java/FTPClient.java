@@ -52,11 +52,23 @@ public class FTPClient {
      * This method is used to provide connection options for the user.
      * @param promptDialog [String] - Prompt to display before providing the options.
      */
-    public static void showConnectionOptions(String promptDialog) throws IOException {
+    public static void showConnectionOptions(String promptDialog) {
 
-        File file = new File("./testFTPCLIENT.json");
-        System.out.println(file.createNewFile());
-        System.out.println("file created!!");
+        try {
+            File myObj = new File("ClientCredentials.json");
+            if (myObj.createNewFile()) {
+                System.out.println("File created: " + myObj.getName());
+                FileWriter myWriter = new FileWriter("ClientCredentials.json");
+                myWriter.write("[]");
+                myWriter.close();
+                System.out.println("Successfully wrote to the file.");
+            } else {
+                System.out.println("File already exists.");
+            }
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
 
         boolean repeatConnectOptions = false;
         Scanner scan = new Scanner(System.in);
@@ -472,7 +484,7 @@ public class FTPClient {
         int i = 1;
         try{
             ObjectMapper mapper = new ObjectMapper();
-            InputStream inputStream = new FileInputStream("target\\classes\\clientCredentials.json");
+            InputStream inputStream = new FileInputStream("clientCredentials.json");
             JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, ClientCredentials.class);
             List<ClientCredentials> allClients = mapper.readValue(inputStream, type); // [obj, obj]
 
@@ -513,13 +525,13 @@ public class FTPClient {
         if (newClient) {
             try {
                 ObjectMapper mapper = new ObjectMapper();
-                InputStream inputStream = new FileInputStream("target\\classes\\clientCredentials.json");
+                InputStream inputStream = new FileInputStream("clientCredentials.json");
                 JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, ClientCredentials.class);
                 List<ClientCredentials> allClients = mapper.readValue(inputStream, type); // [obj, obj]
 
                 ClientCredentials newClientData = new ClientCredentials(userName, password, hostName, protocol);
                 allClients.add(newClientData);
-                mapper.writeValue(new File("target\\classes\\clientCredentials.json"), allClients);
+                mapper.writeValue(new File("clientCredentials.json"), allClients);
 
                 inputStream.close();
                 logger.info("new client credentials are stored.");
@@ -542,7 +554,7 @@ public class FTPClient {
 
         try {
             ObjectMapper mapper = new ObjectMapper();
-            InputStream inputStream = new FileInputStream("target\\classes\\clientCredentials.json");
+            InputStream inputStream = new FileInputStream("clientCredentials.json");
             JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, ClientCredentials.class);
             List<ClientCredentials> clients = mapper.readValue(inputStream, type); // [obj, obj]
             for (ClientCredentials cc : clients) {
