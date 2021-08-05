@@ -31,6 +31,15 @@ public class SFTPConnection implements RemoteConnection {
     private static ChannelSftp sftpChannel;
     private static Session session = null;
 
+    /**
+     * This method is used to make connection with the SFTP remote server.
+     *
+     * @param hostName - eg: 127.0.0.1 (for localhost)
+     * @param userName - client name
+     * @param password - client password
+     * @return [int] - return 1 for success
+     * @throws FTPClientException
+     */
     public int connect(String hostName, String userName, String password) throws FTPClientException {
         try {
             session = jsch.getSession(userName, hostName, 22);
@@ -42,19 +51,26 @@ public class SFTPConnection implements RemoteConnection {
             logger.info("Successfully Connected , creating a channel");
             sftpChannel = (ChannelSftp) session.openChannel("sftp");
             sftpChannel.connect();
-//            return true;
             return 1;
         } catch (JSchException e) {
             throw new FTPClientException(e);
         }
     }
 
+    /**
+     * This method is used to disconnect from the remote SFTP server
+     */
     public void disconnect() {
         sftpChannel.disconnect();
         session.disconnect();
         logger.info("Disconnecting from the remote server");
     }
 
+    /**
+     * This method is used to get current remote directory location
+     *
+     * @throws FTPClientException
+     */
     @Override
     public void getCurrentRemoteDirectory() throws FTPClientException {
         try {
@@ -64,6 +80,11 @@ public class SFTPConnection implements RemoteConnection {
         }
     }
 
+    /**
+     * This method is used to list all the files present in current remote directory
+     *
+     * @throws FTPClientException
+     */
     @Override
     public void listCurrentDirectory() throws FTPClientException {
         try {
@@ -77,6 +98,12 @@ public class SFTPConnection implements RemoteConnection {
         }
     }
 
+    /**
+     * This method is used to delete a file, present on remote SFTP server.
+     * @param filePath - remote file path
+     * @return [boolean] - true if success
+     * @throws FTPClientException
+     */
     @Override
     public boolean deleteFile(String filePath) throws FTPClientException {
         try {
@@ -89,6 +116,13 @@ public class SFTPConnection implements RemoteConnection {
         }
     }
 
+    /**
+     * This method is used to delete an entire directory (including files present in it),
+     * on the SFTP remote server.
+     *
+     * @param remoteDir - remote directory path
+     * @return [boolean] - true if success else return false
+     */
     @Override
     public boolean deleteDirectory(String remoteDir) {
         try {
@@ -114,10 +148,25 @@ public class SFTPConnection implements RemoteConnection {
         return true;
     }
 
+    /**
+     * This method is used to check if provided path (remote path) is a directory or not.
+     *
+     * @param remoteDirectory - remote SFTP path
+     * @return [boolean]
+     * @throws SftpException
+     */
     private boolean isDirectory(String remoteDirectory) throws SftpException {
         return sftpChannel.stat(remoteDirectory).isDir();
     }
 
+    /**
+     * This method is used to put a single file on the remote server, using SFTP protocol.
+     *
+     * @param localFilePath - this is the path on local system
+     * @param remotePath    - this is the path on remote server.
+     * @throws IOException        - can throw IOException, while handling files.
+     * @throws FTPClientException - throws this exception while checking if file exist or not opn remote server.
+     */
     @Override
     public void uploadSingleFile(String localFilePath, String remotePath) throws IOException, FTPClientException {
         String remoteFilePath;
@@ -145,6 +194,12 @@ public class SFTPConnection implements RemoteConnection {
         }
     }
 
+    /**
+     * This method is used to upload multiple files onto remote SFTP server.
+     *
+     * @param localPaths [Array] - these are the paths of all the files on local system, that user wants to upload
+     * @param remotePath - this is the path on remote server, where user want to upload all those files.
+     */
     @Override
     public void uploadMultipleFiles(String[] localPaths, String remotePath) {
         System.out.println("local paths --> " + localPaths);
@@ -159,6 +214,13 @@ public class SFTPConnection implements RemoteConnection {
         }
     }
 
+    /**
+     * This method is used to create new Directory on remote SFTP server.
+     *
+     * @param dirName - name of the directory.
+     * @return [boolean] - returns true if successfully created a directory on remote server, else return false.
+     * @throws IOException - can throw exception while handling files.
+     */
     @Override
     public boolean createNewDirectory(String dirName) throws FTPClientException {
         try {
@@ -171,6 +233,13 @@ public class SFTPConnection implements RemoteConnection {
         }
     }
 
+    /**
+     * This method is used to check if given path is a file or not
+     *
+     * @param filePath - remote SFTP path
+     * @return [boolean]
+     * @throws FTPClientException
+     */
     @Override
     public boolean checkFileExists(String filePath) throws FTPClientException {
         try {
@@ -182,12 +251,26 @@ public class SFTPConnection implements RemoteConnection {
         }
     }
 
+    /**
+     * This method is used to if the given directory exists or not on the local machine.
+     *
+     * @param dirPath - local path
+     * @return [boolean]
+     * @throws FileNotFoundException
+     */
     @Override
     public boolean checkLocalDirectoryExists(String dirPath) throws FileNotFoundException {
         Path path = Paths.get(dirPath);
         return Files.exists(path);
     }
 
+    /**
+     * This method is used to check if the given directory path exists or not on remote server
+     *
+     * @param dirPath - remote path
+     * @return [boolean]
+     * @throws FTPClientException
+     */
     @Override
     public boolean checkDirectoryExists(String dirPath) throws FTPClientException {
         SftpATTRS attrs = null;
@@ -200,6 +283,14 @@ public class SFTPConnection implements RemoteConnection {
         return attrs != null && attrs.isDir();
     }
 
+    /**
+     * This method is used to rename the file present on remote server.
+     *
+     * @param oldName - the name of the file you want to update.
+     * @param newName - the new name
+     * @return [boolean]
+     * @throws FTPClientException
+     */
     @Override
     public boolean renameRemoteFile(String oldName, String newName) throws FTPClientException {
         try {
@@ -215,6 +306,15 @@ public class SFTPConnection implements RemoteConnection {
         return false;
     }
 
+    /**
+     * This method is used to download a single file from a remote SFTP server to local machine.
+     *
+     * @param localPath - local path where you want to download the file to.
+     * @param remotePath - remote path from where you want to download the file from.
+     * @return [boolean] - true if success.
+     * @throws IOException
+     * @throws FTPClientException
+     */
     @Override
     public boolean downloadSingleFile(String localPath, String remotePath) throws IOException, FTPClientException {
         try {
@@ -228,6 +328,14 @@ public class SFTPConnection implements RemoteConnection {
         }
     }
 
+    /**
+     * This method is used to download a multiple files from a remote SFTP server to local machine.
+     *
+     * @param remotePaths - remote path's (String array) from where you want to download the file from.
+     * @param localPath - local path where you want to download the file to.
+     * @return [boolean] - true if success.
+     * @throws IOException
+     */
     @Override
     public boolean downloadMultipleFiles(String[] remotePaths, String localPath) throws IOException {
         System.out.println("Remote paths --> " + remotePaths);
@@ -241,6 +349,14 @@ public class SFTPConnection implements RemoteConnection {
         return false;
     }
 
+    /**
+     * This method is used to search for a file present on the remote SFTP server using a keyword.
+     *
+     * @param filePath - file path, where you want to search.
+     * @param keyword - keyword to use
+     * @return [int]
+     * @throws FTPClientException
+     */
     @Override
     public int searchFilesWithKeyword(String filePath, String keyword) throws FTPClientException {
         if (isNullOrEmpty(filePath) || isNullOrEmpty(keyword)) {
@@ -263,6 +379,11 @@ public class SFTPConnection implements RemoteConnection {
         return result.size();
     }
 
+    /**
+     * This method is used to print the search result for 'searchFilesWithKeyword' and 'searchFilesWithExtension' functions.
+     *
+     * @param result - list of file names, which contain keyword/ extension.
+     */
     private void printSearchResult(ArrayList<String> result) {
         if (result != null && result.size() > 0) {
             System.out.println("SEARCH RESULT:");
@@ -272,6 +393,14 @@ public class SFTPConnection implements RemoteConnection {
         }
     }
 
+    /**
+     * This method is used to search for a file based on given extension.
+     *
+     * @param filePath - file path, where you want to search.
+     * @param extension - extension to use
+     * @return [int]
+     * @throws FTPClientException
+     */
     @Override
     public int searchFilesWithExtension(String filePath, String extension) throws FTPClientException {
         if (isNullOrEmpty(filePath) || isNullOrEmpty(extension)) {
@@ -305,6 +434,14 @@ public class SFTPConnection implements RemoteConnection {
         return;
     }
 
+    /**
+     * This method is used to rename the file present on local machine
+     *
+     * @param oldName - the name of the file you want to update.
+     * @param newName - the new name
+     * @return [boolean]
+     * @throws FTPClientException
+     */
     @Override
     public boolean renameLocalFile(String oldName, String newName) throws FTPClientException {
         return FTPUtils.renameLocalFile(oldName, newName);

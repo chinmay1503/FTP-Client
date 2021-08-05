@@ -27,6 +27,15 @@ public class FTPConnection implements RemoteConnection {
     private FTPClient client;
     private static final Logger logger = LogManager.getLogger(FTPClient.class);
 
+    /**
+     * This method is used to make connection with the FTP remote server.
+     *
+     * @param hostName - eg: 127.0.0.1 (for localhost)
+     * @param userName - client name
+     * @param password - client password
+     * @return [int] - return 1 for success
+     * @throws FTPClientException
+     */
     @Override
     public int connect(String hostName, String userName, String password) {
         try {
@@ -47,10 +56,12 @@ public class FTPConnection implements RemoteConnection {
         } catch (IOException e) {
             System.err.println("Error due to IOException");
         }
-//        return false;
          return 2;
     }
 
+    /**
+     * This method is used to disconnect from the remote FTP server
+     */
     public void disconnect() throws FTPClientException {
         try {
             client.logout();
@@ -61,7 +72,7 @@ public class FTPConnection implements RemoteConnection {
     }
 
     /**
-     * This method is used to create new Directory on remote server.
+     * This method is used to create new Directory on remote FTP server.
      *
      * @param dirName - name of the directory.
      * @return [boolean] - returns true if successfully created a directory on remote server, else return false.
@@ -78,7 +89,14 @@ public class FTPConnection implements RemoteConnection {
         return false;
     }
 
-    //download a single file from remote server to local
+    /**
+     * This method is used to download a multiple files from a remote FTP server to local machine.
+     *
+     * @param remotePaths - remote path's (String array) from where you want to download the file from.
+     * @param localPath - local path where you want to download the file to.
+     * @return [boolean] - true if success.
+     * @throws IOException
+     */
     @Override
     public boolean downloadMultipleFiles(String[] remotePaths, String localPath) throws IOException {
         System.out.println("Remote paths --> " + remotePaths);
@@ -93,13 +111,24 @@ public class FTPConnection implements RemoteConnection {
         return false;
     }
 
-    //Check if file exists in remote directory
+    /**
+     * This method is used to if the given directory exists or not on remote server.
+     *
+     * @param filePath - remote path
+     * @return [boolean]
+     * @throws FileNotFoundException
+     */
     @Override
     public boolean checkFileExists(String filePath) throws IOException {
         FTPFile[] remoteFile = client.listFiles(filePath);
         return remoteFile.length > 0;
     }
 
+    /**
+     *
+     * @param dirPath
+     * @return
+     */
     @Override
     public boolean checkLocalDirectoryExists(String dirPath) {
         Path path = Paths.get(dirPath);
@@ -131,6 +160,11 @@ public class FTPConnection implements RemoteConnection {
         return true;
     }
 
+    /**
+     * This method is used to get current remote directory location
+     *
+     * @throws FTPClientException
+     */
     @Override
     public void getCurrentRemoteDirectory() throws FTPClientException {
         try {
@@ -140,6 +174,11 @@ public class FTPConnection implements RemoteConnection {
         }
     }
 
+    /**
+     * This method is used to list all the files present in current remote directory
+     *
+     * @throws FTPClientException
+     */
     @Override
     public void listCurrentDirectory() throws FTPClientException {
         try {
@@ -152,6 +191,12 @@ public class FTPConnection implements RemoteConnection {
         }
     }
 
+    /**
+     * This method is used to delete a file, present on remote FTP server.
+     * @param filePath - remote file path
+     * @return [boolean] - true if success
+     * @throws FTPClientException
+     */
     @Override
     public boolean deleteFile(String filePath) throws FTPClientException {
         try {
@@ -162,6 +207,13 @@ public class FTPConnection implements RemoteConnection {
         }
     }
 
+    /**
+     * This method is used to delete an entire directory (including files present in it),
+     * on the FTP remote server.
+     *
+     * @param dirPath - remote directory path
+     * @return [boolean] - true if success else return false
+     */
     @Override
     public boolean deleteDirectory(String dirPath) throws FTPClientException {
         try {
@@ -225,8 +277,7 @@ public class FTPConnection implements RemoteConnection {
     }
 
     /**
-     * This method is used to upload multiple files onto remote server.
-     * This method
+     * This method is used to upload multiple files onto remote FTP server.
      *
      * @param localPaths [Array] - these are the paths of all the files on local system, that user wants to upload
      * @param remotePath - this is the path on remote server, where user want to upload all those files.
@@ -245,6 +296,14 @@ public class FTPConnection implements RemoteConnection {
         }
     }
 
+    /**
+     * This method is used to rename the file present on remote server.
+     *
+     * @param oldName - the name of the file you want to update.
+     * @param newName - the new name
+     * @return [boolean]
+     * @throws FTPClientException
+     */
     @Override
     public boolean renameRemoteFile(String oldName, String newName) throws FTPClientException {
         try {
@@ -254,6 +313,14 @@ public class FTPConnection implements RemoteConnection {
         }
     }
 
+    /**
+     *
+     * @param sourceDir
+     * @param desDir
+     * @return
+     * @throws FTPClientException
+     * @throws IOException
+     */
     @Override
     public boolean copyDirectory(String sourceDir, String desDir) throws FTPClientException, IOException {
         if (checkDirectoryExists(sourceDir)) {
@@ -276,6 +343,13 @@ public class FTPConnection implements RemoteConnection {
         return false;
     }
 
+    /**
+     *
+     * @param currentDir
+     * @param saveDir
+     * @throws IOException
+     * @throws FTPClientException
+     */
     @Override
     public void downloadDirectory(String currentDir, String saveDir) throws IOException, FTPClientException {
         String parentDir = client.printWorkingDirectory();
@@ -332,6 +406,15 @@ public class FTPConnection implements RemoteConnection {
         }
     }
 
+    /**
+     * This method is used to download a single file from a remote FTP server to local machine.
+     *
+     * @param localPath - local path where you want to download the file to.
+     * @param remoteFilePath - remote path from where you want to download the file from.
+     * @return [boolean] - true if success.
+     * @throws IOException
+     * @throws FTPClientException
+     */
     @Override
     public boolean downloadSingleFile(String localPath, String remoteFilePath) throws IOException, FTPClientException {
         File downloadFile = new File(localPath);
@@ -355,6 +438,14 @@ public class FTPConnection implements RemoteConnection {
         }
     }
 
+    /**
+     * This method is used to search for a file present on the remote FTP server using a keyword.
+     *
+     * @param filePath - file path, where you want to search.
+     * @param keyword - keyword to use
+     * @return [int]
+     * @throws FTPClientException
+     */
     @Override
     public int searchFilesWithKeyword(String filePath, String keyword) throws FTPClientException {
         if (isNullOrEmpty(filePath) || isNullOrEmpty(keyword)) {
@@ -381,6 +472,14 @@ public class FTPConnection implements RemoteConnection {
         return result != null ? result.length : 0;
     }
 
+    /**
+     * This method is used to search for a file based on given extension.
+     *
+     * @param filePath - file path, where you want to search.
+     * @param extension - extension to use
+     * @return [int]
+     * @throws FTPClientException
+     */
     @Override
     public int searchFilesWithExtension(String filePath, String extension) throws FTPClientException {
         if (isNullOrEmpty(filePath) || isNullOrEmpty(extension)) {
@@ -392,6 +491,13 @@ public class FTPConnection implements RemoteConnection {
         return searchFiles(filePath, filter);
     }
 
+    /**
+     *
+     * @param localParentDir
+     * @param remoteParentDir
+     * @throws IOException
+     * @throws FTPClientException
+     */
     @Override
     public void uploadDirectory(String localParentDir, String remoteParentDir) throws IOException, FTPClientException {
         String remoteDirPath = client.printWorkingDirectory();
@@ -437,6 +543,14 @@ public class FTPConnection implements RemoteConnection {
         }
     }
 
+    /**
+     * This method is used to rename the file present on local machine
+     *
+     * @param oldName - the name of the file you want to update.
+     * @param newName - the new name
+     * @return [boolean]
+     * @throws FTPClientException
+     */
     @Override
     public boolean renameLocalFile(String oldName, String newName) throws FTPClientException {
         return FTPUtils.renameLocalFile(oldName, newName);
