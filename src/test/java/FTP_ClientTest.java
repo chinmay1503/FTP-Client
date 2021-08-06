@@ -145,6 +145,7 @@ public class FTP_ClientTest {
     public void deleteDummyFileFromRemote_FTP() throws FTPClientException, IOException {
         ftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
         assertTrue(ftpRemoteConnection.deleteFile("/foo.txt"));
+        ftpRemoteConnection.deleteFile("/foo.txt");
     }
 
     @Test
@@ -154,9 +155,9 @@ public class FTP_ClientTest {
 
     @Test
     public void deleteDummyFileFromRemote_SFTP() throws FTPClientException, IOException {
-        //TODO: this test fails because of incomplete upload single file implementation
         sftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
         assertTrue(sftpRemoteConnection.deleteFile("/foo.txt"));
+        sftpRemoteConnection.deleteFile("/foo.txt");
     }
 
     @Test
@@ -171,6 +172,7 @@ public class FTP_ClientTest {
         ftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
         int fileCount = ftpRemoteConnection.searchFilesWithKeyword("/", "foo");
         assertTrue(fileCount > 0);
+        ftpRemoteConnection.deleteFile("/foo.txt");
     }
 
     @Test
@@ -190,6 +192,7 @@ public class FTP_ClientTest {
         ftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
         int fileCount = ftpRemoteConnection.searchFilesWithExtension("/", "txt");
         assertTrue(fileCount > 0);
+        ftpRemoteConnection.deleteFile("/foo.txt");
     }
 
     @Test
@@ -206,10 +209,10 @@ public class FTP_ClientTest {
 
     @Test
     public void searchFilesWithKeyword_SFTP() throws FTPClientException, IOException {
-        //TODO: this test fails because of incomplete upload single file implementation
         sftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
         int fileCount = sftpRemoteConnection.searchFilesWithKeyword("/", "foo");
         assertTrue(fileCount > 0);
+        sftpRemoteConnection.deleteFile("/foo.txt");
     }
 
     @Test
@@ -229,6 +232,7 @@ public class FTP_ClientTest {
         sftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
         int fileCount = sftpRemoteConnection.searchFilesWithExtension("/", "txt");
         assertTrue(fileCount > 0);
+        sftpRemoteConnection.deleteFile("/foo.txt");
     }
 
     @Test
