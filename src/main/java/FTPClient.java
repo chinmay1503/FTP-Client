@@ -74,7 +74,7 @@ public class FTPClient {
         logger.debug("Prompting the user to select connect options.");
 
         System.out.println(promptDialog+"\n");
-        String connectOptions = getInputFromUser(scan, "1. Use saved Connections \t"
+        String connectOptions = FTPUtils.getInputFromUser(scan, "1. Use saved Connections \t"
                 + " 2. Enter New user Credentials and Save them \t"
                 + " 3. Exit\n"
                 + "Enter your Option", "connectOptions");
@@ -91,7 +91,7 @@ public class FTPClient {
                         hostName = selectedUserDetails.get(2);
                         protocol = selectedUserDetails.get(3);
                         System.out.println("Connecting to:\nUserName: " + userName + "\tserver: " + hostName + "\tProtocol: " + protocol);
-                        password = getInputFromUser(scan, "Password", "Password");
+                        password = FTPUtils.getInputFromUser(scan, "Password", "Password");
                     }
                     break;
 
@@ -101,10 +101,10 @@ public class FTPClient {
                     if (isNullOrEmpty(hostName))
                         hostName = "127.0.0.1";
 
-                    userName = getInputFromUser(scan, "UserName", "UserName");
-                    password = getInputFromUser(scan, "Password", "Password");
+                    userName = FTPUtils.getInputFromUser(scan, "UserName", "UserName");
+                    password = FTPUtils.getInputFromUser(scan, "Password", "Password");
 
-                    String protocolNum = getInputFromUser(scan, "Select Protocol: 1. FTP \t 2. SFTP", "protocolNum");
+                    String protocolNum = FTPUtils.getInputFromUser(scan, "Select Protocol: 1. FTP \t 2. SFTP", "protocolNum");
                     if (protocolNum.equals("1"))
                         protocol = "FTP";
                     else
@@ -118,7 +118,7 @@ public class FTPClient {
                     break;
 
                 default:
-                    connectOptions = getInputFromUser(scan,
+                    connectOptions = FTPUtils.getInputFromUser(scan,
                             "please enter Correct option, choose form following.\n"
                                     + "1. Use saved Connections \t 2. Enter New user Credentials and Save them\n"
                                     + "Enter your Option",
@@ -215,7 +215,7 @@ public class FTPClient {
 
                             case "3":
                                 System.out.println("3. Get multiple file from remote server\n");
-                                String userOptions = getInputFromUser(scan, "Would you like to download the contents of the entire directory? y/n\n", "userOption");
+                                String userOptions = FTPUtils.getInputFromUser(scan, "Would you like to download the contents of the entire directory? y/n\n", "userOption");
 
                                 //Call method from case 11 to download entire directory
                                 if ("y".equalsIgnoreCase(userOptions)) {
@@ -279,8 +279,8 @@ public class FTPClient {
 
                                 System.out.println("5. Put file onto remote server\n");
 
-                            String localFilePath = getInputFromUser(scan, "Enter Local file path, that you want to upload", "localFilePath");
-                            String remotePath = getInputFromUser(scan, "Enter Destination", "remotePath");
+                            String localFilePath = FTPUtils.getInputFromUser(scan, "Enter Local file path, that you want to upload", "localFilePath");
+                            String remotePath = FTPUtils.getInputFromUser(scan, "Enter Destination", "remotePath");
                             remoteConnection.uploadSingleFile(localFilePath, remotePath);
 
                                 logger.debug("End of functionality - Put file onto remote server");
@@ -291,7 +291,7 @@ public class FTPClient {
 
                                 System.out.println("6. Put multiple files on remote server\n");
 
-                            String remote_Path = getInputFromUser(scan, "Enter Destination", "remote_Path");
+                            String remote_Path = FTPUtils.getInputFromUser(scan, "Enter Destination", "remote_Path");
 
                             Set<String> uploadFilesSet = new HashSet<>();
                             boolean uploadMore;
@@ -301,7 +301,7 @@ public class FTPClient {
                             do {
                                 uploadMore = false;
 
-                                String local_Path = getInputFromUser(scan, "Enter Local file path, that you want to upload", "local_Path");
+                                String local_Path = FTPUtils.getInputFromUser(scan, "Enter Local file path, that you want to upload", "local_Path");
                                 File localFile = new File(local_Path);
                                 if(localFile.isFile()) {
                                     uploadFilesSet.add(local_Path);
@@ -311,9 +311,9 @@ public class FTPClient {
                                     isValidPath = false;
                                 }
                                 if(isValidPath) {
-                                    uploadMoreFiles = getInputFromUser(scan, "Do you want to upload another File ? (y/n)", "uploadMoreFiles");
+                                    uploadMoreFiles = FTPUtils.getInputFromUser(scan, "Do you want to upload another File ? (y/n)", "uploadMoreFiles");
                                 } else {
-                                    uploadMoreFiles = getInputFromUser(scan, "Try again? (y/n)", "uploadMoreFiles");
+                                    uploadMoreFiles = FTPUtils.getInputFromUser(scan, "Try again? (y/n)", "uploadMoreFiles");
                                 }
 
                                 if (uploadMoreFiles.equals("y")) {
@@ -354,7 +354,7 @@ public class FTPClient {
 
                             case "8":
                                 System.out.println("8. Delete directories from remote server\n");
-                                String dirPath = getInputFromUser(scan, "Please enter the path to the remote directory you would like to delete", "Path");
+                                String dirPath = FTPUtils.getInputFromUser(scan, "Please enter the path to the remote directory you would like to delete", "Path");
                                 if (remoteConnection.deleteDirectory(dirPath)) {
                                     System.out.println("Directory deleted Successfully. \n");
                                 } else {
@@ -364,15 +364,15 @@ public class FTPClient {
 
                             case "9":
                                 System.out.println("9. Change permissions on remote server\n");
-                                String inputPath = getInputFromUser(scan, "Absolute Path to file or directory you want to change permission of", "inputPath");
-                                String permissions = getInputFromUser(scan, "Please enter the the new file permissions (e.g. 777, 600, 444)", "permissions");
+                                String inputPath = FTPUtils.getInputFromUser(scan, "Absolute Path to file or directory you want to change permission of", "inputPath");
+                                String permissions = FTPUtils.getInputFromUser(scan, "Please enter the the new file permissions (e.g. 777, 600, 444)", "permissions");
                                 remoteConnection.changePermission(permissions, inputPath);
                                 break;
 
                             case "10":
                                 System.out.println("10. Rename file on remote server\n");
-                                String oldName = getInputFromUser(scan, "Enter name of file to rename", "oldName");
-                                String newName = getInputFromUser(scan, "Enter new name", "newName");
+                                String oldName = FTPUtils.getInputFromUser(scan, "Enter name of file to rename", "oldName");
+                                String newName = FTPUtils.getInputFromUser(scan, "Enter new name", "newName");
                                 boolean success = remoteConnection.renameRemoteFile(oldName, newName);
                                 if (success) {
                                     System.out.println(oldName + " was renamed to: " + newName);
@@ -383,8 +383,8 @@ public class FTPClient {
 
                             case "11":
                                 System.out.println("10. Rename file on local machine\n");
-                                String oldLocalName = getInputFromUser(scan, "Enter name of file to rename", "oldLocalName");
-                                String newLocalName = getInputFromUser(scan, "Enter new name", "newLocalName");
+                                String oldLocalName = FTPUtils.getInputFromUser(scan, "Enter name of file to rename", "oldLocalName");
+                                String newLocalName = FTPUtils.getInputFromUser(scan, "Enter new name", "newLocalName");
                                 boolean local_rename_success = remoteConnection.renameLocalFile(oldLocalName, newLocalName);
                                 if (local_rename_success) {
                                     System.out.println("[" + oldLocalName + "] was renamed to: [" + newLocalName + "]");
@@ -397,19 +397,19 @@ public class FTPClient {
 
                             case "12":
                                 System.out.println("12. Copy directories on remote server\n");
-                                String sourceDir = getInputFromUser(scan, "Enter name of source directory to copy", "sourceDir");
-                                String desDir = getInputFromUser(scan, "Enter name of new copy", "desDir");
+                                String sourceDir = FTPUtils.getInputFromUser(scan, "Enter name of source directory to copy", "sourceDir");
+                                String desDir = FTPUtils.getInputFromUser(scan, "Enter name of new copy", "desDir");
                                 while (sourceDir.equals(desDir)) {
                                     System.out.println("Copy cannot have the same name");
-                                    sourceDir = getInputFromUser(scan, "Enter name of directory to copy", "sourceDir");
-                                    desDir = getInputFromUser(scan, "Enter name of new copy", "desDir");
+                                    sourceDir = FTPUtils.getInputFromUser(scan, "Enter name of directory to copy", "sourceDir");
+                                    desDir = FTPUtils.getInputFromUser(scan, "Enter name of new copy", "desDir");
                                 }
                                 remoteConnection.copyDirectory(sourceDir, desDir);
                                 break;
 
                             case "13":
                                 System.out.println("13. Delete file from remote server\n");
-                                String filePath = getInputFromUser(scan, "Please enter the file path to the remote directory you would like to delete", "filePath");
+                                String filePath = FTPUtils.getInputFromUser(scan, "Please enter the file path to the remote directory you would like to delete", "filePath");
                                 if (remoteConnection.deleteFile(filePath)) {
                                     logger.debug("File deleted successfully.");
                                     System.out.println("File deleted Successfully. \n");
@@ -421,16 +421,16 @@ public class FTPClient {
 
                             case "14":
                                 System.out.println("14. Search file on remote server\n");
-                                String searchFilePath = getInputFromUser(scan, "Please enter the folder path to the remote directory", "searchFilePath");
-                                String searchOption = getInputFromUser(scan, "1. Search File With Keyword\n" +
+                                String searchFilePath = FTPUtils.getInputFromUser(scan, "Please enter the folder path to the remote directory", "searchFilePath");
+                                String searchOption = FTPUtils.getInputFromUser(scan, "1. Search File With Keyword\n" +
                                         "2. Search File ending with Extension\n" +
                                         "Please Choose Options \"1 or 2\"", "searchOption");
                                 if (searchOption.equals("1")) {
-                                    String keyword = getInputFromUser(scan, "Enter Search Keyword", "keyword");
+                                    String keyword = FTPUtils.getInputFromUser(scan, "Enter Search Keyword", "keyword");
                                     int fileCount = remoteConnection.searchFilesWithKeyword(searchFilePath, keyword);
                                     logger.info("The number of files found with keyword :[" + keyword + "] are [" + fileCount + "]");
                                 } else if (searchOption.equals("2")) {
-                                    String extension = getInputFromUser(scan, "Enter Search File Extension", "extension");
+                                    String extension = FTPUtils.getInputFromUser(scan, "Enter Search File Extension", "extension");
                                     int fileCount = remoteConnection.searchFilesWithExtension(searchFilePath, extension);
                                     logger.info("The number of files found with extension :[" + extension + "] are [" + fileCount + "]");
                                 } else {
@@ -477,21 +477,5 @@ public class FTPClient {
             }
             logger.debug("Main Method Execution -> Ends");
         }
-
-
-    private static String getInputFromUser(Scanner scan, String inputMsg, String fieldName) {
-        String inputString;
-        do {
-            System.out.print(inputMsg + ": ");
-            inputString = scan.nextLine();
-            checkNullOrEmpty(inputString, fieldName);
-        } while (inputString.length() == 0);
-        return inputString;
-    }
-
-    public static void checkNullOrEmpty(String input, String fieldName) {
-        if (isNullOrEmpty(input))
-            System.out.println((String.format("Field [%s] is mandatory", fieldName)));
-    }
 
 }
