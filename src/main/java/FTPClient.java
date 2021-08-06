@@ -276,6 +276,7 @@ public class FTPClient {
                                 } else {
                                     System.out.println("Failed to rename: " + oldName);
                                 }
+                                break;
 
                             case "12":
                             System.out.println("12. Copy directories on remote server\n");

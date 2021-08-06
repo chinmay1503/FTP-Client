@@ -1,6 +1,8 @@
 package ftp.core;
 
 import org.apache.commons.net.ftp.FTPClient;
+
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -47,4 +49,5 @@ public interface RemoteConnection {
     void downloadDirectory(String currentDir, String saveDir) throws IOException, FTPClientException;
 
     void uploadDirectory(String localParentDir, String remoteParentDir) throws IOException, FTPClientException;
+
 }

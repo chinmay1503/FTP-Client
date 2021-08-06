@@ -242,6 +242,22 @@ public class FTP_ClientTest {
         assertEquals(0, fileCount);
     }
 
+    @Test
+    public void copyRemoteFileExist_FTP() throws IOException, FTPClientException {
+        String curDir = System.getProperty("user.dir");
+        String testDir = curDir + "/test";
+        FileUtils.forceMkdir(new File(testDir));
+        FileUtils.touch(new File(testDir + "/a.txt"));
+        if(!ftpRemoteConnection.checkDirectoryExists(testDir)) {
+            ftpRemoteConnection.createNewDirectory("/test");
+        }
+        ftpRemoteConnection.uploadDirectory(testDir, "/test");
+        ftpRemoteConnection.copyDirectory("/test", "/copyTest");
+        ftpRemoteConnection.deleteDirectory("/test");
+        ftpRemoteConnection.deleteDirectory("/copyTest");
+        FileUtils.deleteDirectory(new File(testDir));
+    }
+
     public static void createDummyFooFile() throws FTPClientException {
         try{
             FileUtils.touch(localDummyFilePath.toFile());
