@@ -2,6 +2,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ftp.core.RemoteConnectionFactory;
 import ftp.core.RemoteConnection;
+import ftp.core.FTPUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ftp.core.ClientCredentials;
@@ -81,7 +82,7 @@ public class FTPClient {
             switch (connectOptions) {
                 case "1":
                     System.out.println("List of all saved connections (Choose from below connections):\n");
-                    ArrayList<String> selectedUserDetails = listAllUserCredentials();
+                    ArrayList<String> selectedUserDetails = FTPUtils.listAllUserCredentials();
                     if (selectedUserDetails.isEmpty()) {
                         connectOptions = "2";
                         repeatConnectOptions = true;
@@ -166,7 +167,7 @@ public class FTPClient {
 
 
             if (connected) {
-                storeClientCredentials(hostName, userName, password, protocol);
+                FTPUtils.storeClientCredentials(hostName, userName, password, protocol);
                 System.out.println("\n--- Connected to Remote FTP Server ---\n");
                 showOptions();
 
@@ -477,109 +478,6 @@ public class FTPClient {
             logger.debug("Main Method Execution -> Ends");
         }
 
-    /**
-     * This function prints all saved connections on console. and prompts user to select the connection details,
-     * that the user wants to use to connect to the remote server.
-     *
-     * @return selectedConnectionDetails [ArrayList<String>]  -
-     *              A list of selected connection information is returned.
-     */
-    private static ArrayList<String> listAllUserCredentials() {
-        ArrayList<ArrayList<String> > aList =
-                new ArrayList<>();
-        int userIndex = 0;
-        int i = 1;
-        try{
-            ObjectMapper mapper = new ObjectMapper();
-            InputStream inputStream = new FileInputStream("clientCredentials.json");
-            JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, ClientCredentials.class);
-            List<ClientCredentials> allClients = mapper.readValue(inputStream, type); // [obj, obj]
-
-            for(ClientCredentials cc : allClients){
-                ArrayList<String> a1 = new ArrayList<>();
-                a1.add(cc.getUserName());
-                a1.add(cc.getPassword());
-                a1.add(cc.getServer());
-                a1.add(cc.getProtocol());
-                aList.add(a1);
-                System.out.println(i + ". userName: " + cc.getUserName() + "\tserver: " + cc.getServer() + "\tProtocol: " + cc.getProtocol());
-                i = i + 1;
-            }
-            if(i == 1){
-                System.out.println("Sorry, No saved Connections. You will have to enter all Credentials (choose below option)");
-            }
-            System.out.println(i + ". None of the above. Enter New Credentials");
-            Scanner scan = new Scanner(System.in);
-            userIndex = Integer.parseInt(getInputFromUser(scan, "\nEnter Option", "userIndex"));
-            inputStream.close();
-        } catch (IOException e){
-            e.printStackTrace();
-        }
-        if(userIndex == i){
-            return new ArrayList<>();
-        }
-        return aList.get(userIndex - 1);
-    }
-
-    /**
-     * This method is used to save client credentials to `clientCredentials.json` file, if its a new client login.
-     *
-     * @param hostName - hostname, can be (127.0.0.1) or any other.
-     * @param userName - registered client user name.
-     * @param password - password to connect to server.
-     * @param protocol - selected protocol (either FTP or SFTP).
-     */
-    private static void storeClientCredentials(String hostName, String userName, String password, String protocol) {
-        logger.debug("starting functionality - Store new client credentials");
-        boolean newClient = isNewClient(userName);
-        if (newClient) {
-            try {
-                ObjectMapper mapper = new ObjectMapper();
-                InputStream inputStream = new FileInputStream("clientCredentials.json");
-                JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, ClientCredentials.class);
-                List<ClientCredentials> allClients = mapper.readValue(inputStream, type); // [obj, obj]
-
-                ClientCredentials newClientData = new ClientCredentials(userName, password, hostName, protocol);
-                allClients.add(newClientData);
-                mapper.writeValue(new File("clientCredentials.json"), allClients);
-
-                inputStream.close();
-                logger.info("new client credentials are stored.");
-            } catch (IOException e) {
-                logger.info("Error Occurred - error occurred while trying to store new user credentials.");
-                e.printStackTrace();
-            }
-        }
-        logger.debug("End of functionality - Store new client credentials");
-    }
-
-    /**
-     * This method is used to check if client credentials are already present in the `clientCredentials.json` file
-     *
-     * @param userName - registered client user name.
-     * @return [boolean] - return true if credentials are not present else return false if client details are already saved.
-     */
-    private static boolean isNewClient(String userName) {
-        logger.debug("starting functionality - checking if its a new client login.");
-
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            InputStream inputStream = new FileInputStream("clientCredentials.json");
-            JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, ClientCredentials.class);
-            List<ClientCredentials> clients = mapper.readValue(inputStream, type); // [obj, obj]
-            for (ClientCredentials cc : clients) {
-                if (cc.getUserName().equals(userName)) {
-                    logger.info("Client details already saved.");
-                    return false;
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        logger.info("Its a new Client.");
-        logger.debug("End of functionality - checking if its a new client login.");
-        return true;
-    }
 
     private static String getInputFromUser(Scanner scan, String inputMsg, String fieldName) {
         String inputString;
