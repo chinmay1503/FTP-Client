@@ -6,13 +6,11 @@ import java.io.IOException;
 
 public interface RemoteConnection {
 
-    boolean connect(String hostName, String userName, String password) throws FTPClientException;
+    int connect(String hostName, String userName, String password) throws FTPClientException;
 
     void disconnect() throws FTPClientException;
 
     boolean createNewDirectory(String dirName) throws FTPClientException, IOException;
-
-    int getClientReplyCode() throws FTPClientException;
 
     void getCurrentRemoteDirectory() throws FTPClientException;
 
@@ -47,4 +45,8 @@ public interface RemoteConnection {
     void downloadDirectory(String currentDir, String saveDir) throws IOException, FTPClientException;
 
     void uploadDirectory(String localParentDir, String remoteParentDir) throws IOException, FTPClientException;
+
+    boolean renameLocalFile(String oldName, String newName) throws FTPClientException;
+
+    boolean changePermission(String permissions, String inputPath);
 }

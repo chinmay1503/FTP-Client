@@ -1,7 +1,4 @@
-import ftp.core.ClientCredentials;
-import ftp.core.FTPClientException;
-import ftp.core.RemoteConnection;
-import ftp.core.RemoteConnectionFactory;
+import ftp.core.*;
 import org.apache.commons.io.FileUtils;
 import org.junit.Ignore;
 import org.junit.jupiter.api.AfterAll;
@@ -57,7 +54,11 @@ public class FTP_ClientTest {
     public static RemoteConnection getRemoteConnectionObject(ClientCredentials clientCredentials) throws FTPClientException {
         RemoteConnectionFactory remoteConnectionFactory = new RemoteConnectionFactory();
         RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(clientCredentials.getProtocol());
-        boolean connected = remoteConnection.connect(clientCredentials.getServer(), clientCredentials.getUserName(), clientCredentials.getPassword());
+        boolean connected = false;
+        int connected_value = remoteConnection.connect(clientCredentials.getServer(), clientCredentials.getUserName(), clientCredentials.getPassword());
+        if(connected_value == 1){
+            connected = true;
+        }
         assertTrue(connected);
         return remoteConnection;
     }
@@ -162,7 +163,6 @@ public class FTP_ClientTest {
 
     @Test
     public void deleteDummyFileFromRemote_SFTP() throws FTPClientException, IOException {
-        //TODO: this test fails because of incomplete upload single file implementation
         sftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
         assertTrue(sftpRemoteConnection.deleteFile("/foo.txt"));
     }
@@ -179,6 +179,7 @@ public class FTP_ClientTest {
         ftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
         int fileCount = ftpRemoteConnection.searchFilesWithKeyword("/", "foo");
         assertTrue(fileCount > 0);
+        ftpRemoteConnection.deleteFile("/foo.txt");
     }
 
     @Test
@@ -198,6 +199,7 @@ public class FTP_ClientTest {
         ftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
         int fileCount = ftpRemoteConnection.searchFilesWithExtension("/", "txt");
         assertTrue(fileCount > 0);
+        ftpRemoteConnection.deleteFile("/foo.txt");
     }
 
     @Test
@@ -214,10 +216,10 @@ public class FTP_ClientTest {
 
     @Test
     public void searchFilesWithKeyword_SFTP() throws FTPClientException, IOException {
-        //TODO: this test fails because of incomplete upload single file implementation
         sftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
         int fileCount = sftpRemoteConnection.searchFilesWithKeyword("/", "foo");
         assertTrue(fileCount > 0);
+        sftpRemoteConnection.deleteFile("/foo.txt");
     }
 
     @Test
@@ -237,6 +239,7 @@ public class FTP_ClientTest {
         sftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
         int fileCount = sftpRemoteConnection.searchFilesWithExtension("/", "txt");
         assertTrue(fileCount > 0);
+        sftpRemoteConnection.deleteFile("/foo.txt");
     }
 
     @Test
@@ -249,6 +252,48 @@ public class FTP_ClientTest {
 
         fileCount = sftpRemoteConnection.searchFilesWithExtension("/", "");
         assertEquals(0, fileCount);
+    }
+
+    @Test
+    public void renameLocalFileTest() throws FTPClientException, IOException {
+        String oldName = System.getProperty("user.dir") + File.separator + "test_rename.txt";
+        String newName = System.getProperty("user.dir") + File.separator + "test_renamed_file.txt";
+        FileUtils.touch(new File(oldName));
+        FTPUtils.renameLocalFile(oldName, newName);
+        assertTrue(org.codehaus.plexus.util.FileUtils.fileExists(newName));
+        FileUtils.deleteQuietly(new File(newName));
+    }
+
+    @Test
+    public void renameLocalFileNotExistTest() throws FTPClientException, IOException {
+        String oldName = System.getProperty("user.dir") + File.separator + "test_rename.txt";
+        String newName = System.getProperty("user.dir") + File.separator + "test_renamed_file.txt";
+        assertFalse(org.codehaus.plexus.util.FileUtils.fileExists(oldName));
+        assertFalse(FTPUtils.renameLocalFile(oldName, newName));
+    }
+
+    @Test
+    public void changePermissions_FTP() throws FTPClientException, IOException {
+        ftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
+        assertFalse(ftpRemoteConnection.changePermission("444", "/foo.txt"));
+        ftpRemoteConnection.deleteFile("/foo.txt");
+    }
+
+    @Test
+    public void changePermissions_SFTP() throws FTPClientException, IOException {
+        sftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
+        assertTrue(sftpRemoteConnection.changePermission("444", "/foo.txt"));
+        assertTrue(sftpRemoteConnection.changePermission("600", "/foo.txt"));
+        assertTrue(sftpRemoteConnection.changePermission("320", "/foo.txt"));
+        sftpRemoteConnection.deleteFile("/foo.txt");
+    }
+
+    @Test
+    public void changePermissionsInvalid_SFTP() throws FTPClientException, IOException {
+        sftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
+        assertFalse(sftpRemoteConnection.changePermission("abc", "/foo.txt"));
+        assertFalse(sftpRemoteConnection.changePermission("888", "/foo.txt"));
+        sftpRemoteConnection.deleteFile("/foo.txt");
     }
 
     public static void createDummyFooFile() throws FTPClientException {
