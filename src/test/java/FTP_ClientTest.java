@@ -261,6 +261,30 @@ public class FTP_ClientTest {
         assertFalse(FTPUtils.renameLocalFile(oldName, newName));
     }
 
+    @Test
+    public void changePermissions_FTP() throws FTPClientException, IOException {
+        ftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
+        assertFalse(ftpRemoteConnection.changePermission("444", "/foo.txt"));
+        ftpRemoteConnection.deleteFile("/foo.txt");
+    }
+
+    @Test
+    public void changePermissions_SFTP() throws FTPClientException, IOException {
+        sftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
+        assertTrue(sftpRemoteConnection.changePermission("444", "/foo.txt"));
+        assertTrue(sftpRemoteConnection.changePermission("600", "/foo.txt"));
+        assertTrue(sftpRemoteConnection.changePermission("320", "/foo.txt"));
+        sftpRemoteConnection.deleteFile("/foo.txt");
+    }
+
+    @Test
+    public void changePermissionsInvalid_SFTP() throws FTPClientException, IOException {
+        sftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
+        assertFalse(sftpRemoteConnection.changePermission("abc", "/foo.txt"));
+        assertFalse(sftpRemoteConnection.changePermission("888", "/foo.txt"));
+        sftpRemoteConnection.deleteFile("/foo.txt");
+    }
+
     public static void createDummyFooFile() throws FTPClientException {
         try{
             FileUtils.touch(localDummyFilePath.toFile());

@@ -556,5 +556,18 @@ public class FTPConnection implements RemoteConnection {
         return FTPUtils.renameLocalFile(oldName, newName);
     }
 
+    /**
+     * This method is used to change permissions of file on remote machine
+     *
+     * @param permissions - User permissions for the file (e.g. 777, 600, 444).
+     * @param inputPath - the absolute filepath on the remote server
+     * @return [boolean]
+     */
+    @Override
+    public boolean changePermission(String permissions, String inputPath) {
+        System.out.println("Not Supported in FTP through Site Commands.");
+        return false;
+    }
+
 }
 

@@ -327,24 +327,26 @@ public class FTPClient {
                             case "7":
                                 logger.debug("starting functionality - Create New Directory on Remote Server");
 
-                            System.out.println("7. Create New Directory on Remote Server\n");
-                            boolean tryCreatingDirAgain;
-                            do {
-                                tryCreatingDirAgain = false;
-                                String dirName = getInputFromUser(scan, "Enter Directory Name: (relative path or absolute path)", "dirName");
-                                boolean newDirStatus = remoteConnection.createNewDirectory(dirName);
-                                if (newDirStatus) {
-                                    logger.info("Directory created Successfully");
-                                    System.out.println("* Directory created Successfully. *\n");
-                                } else {
-                                    logger.info("Error occurred - could not create New Directory in remote server");
-                                    System.out.println("-- Error: could not create New Directory in remote server --\n");
-                                    String tryAgain = getInputFromUser(scan, "Directory may already exist. Do you want try creating Directory again ? (y/n)", "tryAgain");
-                                    if (tryAgain.equals("y")) {
-                                        tryCreatingDirAgain = true;
+                                System.out.println("7. Create New Directory on Remote Server\n");
+                                boolean tryCreatingDirAgain;
+                                do {
+                                    tryCreatingDirAgain = false;
+                                    System.out.println("Enter Directory Name: (relative path or absolute path)");
+                                    String dirName = scan.nextLine();
+                                    boolean newDirStatus = remoteConnection.createNewDirectory(dirName);
+                                    if (newDirStatus) {
+                                        logger.info("Directory created Successfully");
+                                        System.out.println("* Directory created Successfully. *\n");
+                                    } else {
+                                        logger.info("Error occurred - could not create New Directory in remote server");
+                                        System.out.println("-- Error: could not create New Directory in remote server --\n" +
+                                                "Directory may already exist. Do you want try creating Directory again ? (y/n)");
+                                        String tryAgain = scan.nextLine();
+                                        if (tryAgain.equals("y")) {
+                                            tryCreatingDirAgain = true;
+                                        }
                                     }
-                                }
-                            } while (tryCreatingDirAgain);
+                                } while (tryCreatingDirAgain);
 
                                 logger.debug("End of functionality - Create New Directory on Remote Server");
                                 break;
@@ -357,6 +359,13 @@ public class FTPClient {
                                 } else {
                                     System.out.println("-- Error: could not delete New Directory in remote server --");
                                 }
+                                break;
+
+                            case "9":
+                                System.out.println("9. Change permissions on remote server\n");
+                                String inputPath = getInputFromUser(scan, "Absolute Path to file or directory you want to change permission of", "inputPath");
+                                String permissions = getInputFromUser(scan, "Please enter the the new file permissions (e.g. 777, 600, 444)", "permissions");
+                                remoteConnection.changePermission(permissions, inputPath);
                                 break;
 
                             case "10":

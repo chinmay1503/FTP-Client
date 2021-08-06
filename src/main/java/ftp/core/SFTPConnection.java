@@ -447,4 +447,25 @@ public class SFTPConnection implements RemoteConnection {
         return FTPUtils.renameLocalFile(oldName, newName);
     }
 
+    /**
+     * This method is used to change permissions of file on remote machine
+     *
+     * @param permissions - User permissions for the file (e.g. 777, 600, 444).
+     * @param inputPath - the absolute filepath on the remote server
+     * @return [boolean]
+     */
+    @Override
+    public boolean changePermission(String permissions, String inputPath) {
+        try {
+            sftpChannel.chmod(Integer.parseInt(permissions, 8), inputPath);
+            logger.info("Successfully changed the file permissions..!!");
+            return true;
+        } catch (SftpException | NumberFormatException e) {
+            logger.error("Failed to change file permissions");
+            logger.error(e.getMessage());
+            logger.error("Error. Could not change permissions or invalid chmod code. See the message above.");
+            return false;
+        }
+    }
+
 }
