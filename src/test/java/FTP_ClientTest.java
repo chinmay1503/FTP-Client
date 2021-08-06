@@ -141,6 +141,15 @@ public class FTP_ClientTest {
     }
 
     @Test
+    public void downloadSingleFileFromRemote_SFTP() throws FTPClientException {
+        try {
+            sftpRemoteConnection.downloadSingleFile(localDummyFilePath.toString(), "/");
+        } catch (IOException e) {
+            throw new FTPClientException(e);
+        }
+    }
+
+    @Test
     public void deleteDummyFileFromRemote_FTP() throws FTPClientException, IOException {
         ftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
         assertTrue(ftpRemoteConnection.deleteFile("/foo.txt"));
