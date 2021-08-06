@@ -417,8 +417,8 @@ public class FTPConnection implements RemoteConnection {
      */
     @Override
     public boolean downloadSingleFile(String localPath, String remoteFilePath) throws IOException, FTPClientException {
-        File downloadFile = new File(localPath);
 
+        File downloadFile = new File(localPath);
         File parentDir = downloadFile.getParentFile();
         if (!parentDir.exists()) {
             parentDir.mkdir();
