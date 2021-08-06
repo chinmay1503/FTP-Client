@@ -79,14 +79,17 @@ public class FTPConnection implements RemoteConnection {
      * @throws IOException - can throw exception while handling files.
      */
     @Override
-    public boolean createNewDirectory(String dirName) throws IOException {
+    public boolean createNewDirectory(String dirName) throws IOException, FTPClientException {
         try {
-            return client.makeDirectory(dirName);
+            if (!checkDirectoryExists(dirName)) {
+                client.makeDirectory(dirName);
+            }
         } catch (SocketException e) {
             System.out.println("Something went wrong, when trying to create directory \"" + dirName + "\"\n" +
                     "Give valid Directory path/ name .");
+            return false;
         }
-        return false;
+        return true;
     }
 
     /**
