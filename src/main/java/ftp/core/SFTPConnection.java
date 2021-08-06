@@ -325,6 +325,8 @@ public class SFTPConnection implements RemoteConnection {
             return true;
         } catch (SftpException e) {
             throw new FTPClientException(e);
+        } finally {
+            return false;
         }
     }
 

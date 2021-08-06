@@ -142,6 +142,50 @@ public class FTP_ClientTest {
     }
 
     @Test
+    public void downloadSingleFileFromRemote_SFTP() throws FTPClientException {
+        try {
+            String curDir = System.getProperty("user.dir");
+            String testDir = curDir + "/test";
+            FileUtils.forceMkdir(new File(testDir));
+            FileUtils.touch(new File(curDir + "/abc.txt"));
+            sftpRemoteConnection.uploadSingleFile(curDir + "/abc.txt", "/");
+            sftpRemoteConnection.downloadSingleFile(testDir, "/abc.txt");
+            sftpRemoteConnection.deleteFile("/abc.txt");
+            FileUtils.deleteDirectory(new File(testDir));
+            FileUtils.forceDelete(new File(curDir + "/abc.txt"));
+        } catch (IOException e) {
+            throw new FTPClientException(e);
+        }
+    }
+
+    @Test
+    public void downloadSingleFileFromRemote_FTP() throws FTPClientException {
+        try {
+            String curDir = System.getProperty("user.dir");
+            String testDir = curDir + "/test";
+            FileUtils.forceMkdir(new File(testDir));
+            FileUtils.touch(new File(curDir + "/abc.txt"));
+            ftpRemoteConnection.uploadSingleFile(curDir + "/abc.txt", "/");
+            ftpRemoteConnection.downloadSingleFile(testDir, "/abc.txt");
+            ftpRemoteConnection.deleteFile("/abc.txt");
+            FileUtils.deleteDirectory(new File(testDir));
+            FileUtils.forceDelete(new File(curDir + "/abc.txt"));
+        } catch (IOException e) {
+            throw new FTPClientException(e);
+        }
+    }
+
+    @Test
+    public void downloadNonExistentSingleFileFromRemote_FTP() throws FTPClientException, IOException {
+        assertFalse(ftpRemoteConnection.downloadSingleFile(localDummyFilePath.toString(), "/foo-non-existent-file.txt"));
+    }
+
+    @Test
+    public void downloadNonExistentSingleFileFromRemote_SFTP() throws FTPClientException, IOException {
+        assertFalse(sftpRemoteConnection.downloadSingleFile(localDummyFilePath.toString(), "/foo-non-existent-file.txt"));
+    }
+
+    @Test
     public void deleteDummyFileFromRemote_FTP() throws FTPClientException, IOException {
         ftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
         assertTrue(ftpRemoteConnection.deleteFile("/foo.txt"));
