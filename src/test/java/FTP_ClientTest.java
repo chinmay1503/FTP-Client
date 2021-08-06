@@ -244,7 +244,31 @@ public class FTP_ClientTest {
     }
 
     @Test
-    public void copyRemoteFileExist_FTP() throws IOException, FTPClientException {
+    public void renameRemoteFileExist_FTP() throws FTPClientException, IOException {
+        ftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
+        assertTrue(ftpRemoteConnection.renameRemoteFile("/foo.txt", "/bar.txt"));
+        ftpRemoteConnection.deleteFile("/bar.txt");
+    }
+
+    @Test
+    public void renameRemoteFileDoesntExist_FTP() throws FTPClientException, IOException {
+        assertFalse(ftpRemoteConnection.renameRemoteFile("/this_file_does_not_exist_I_hope.txt", "/bar.txt"));
+    }
+
+    @Test
+    public void renameRemoteFileExist_SFTP() throws FTPClientException, IOException {
+        sftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
+        assertTrue(sftpRemoteConnection.renameRemoteFile("/foo.txt", "/bar.txt"));
+        sftpRemoteConnection.deleteFile("/bar.txt");
+    }
+
+    @Test
+    public void renameRemoteFileDoesntExist_SFTP() throws FTPClientException, IOException {
+        assertFalse(sftpRemoteConnection.renameRemoteFile("/this_file_does_not_exist_I_hope.txt", "/bar.txt"));
+    }
+
+    @Test
+    public void copyRemoteDirExist_FTP() throws IOException, FTPClientException {
         String curDir = System.getProperty("user.dir");
         String testDir = curDir + "/test";
         FileUtils.forceMkdir(new File(testDir));
@@ -253,10 +277,34 @@ public class FTP_ClientTest {
             ftpRemoteConnection.createNewDirectory("/test");
         }
         ftpRemoteConnection.uploadDirectory(testDir, "/test");
-        ftpRemoteConnection.copyDirectory("/test", "/copyTest");
+        assertTrue(ftpRemoteConnection.copyDirectory("/test", "/copyTest"));
         ftpRemoteConnection.deleteDirectory("/test");
         ftpRemoteConnection.deleteDirectory("/copyTest");
         FileUtils.deleteDirectory(new File(testDir));
+    }
+
+    @Test
+    public void copyRemoteDirDoesntExist_FTP() throws FTPClientException, IOException {
+        assertFalse(ftpRemoteConnection.copyDirectory("/test-I-hope-doesnt-exist", "/copyTest"));
+    }
+
+    @Test
+    public void copyRemoteDirExist_SFTP() throws IOException, FTPClientException {
+        String curDir = System.getProperty("user.dir");
+        String testDir = curDir + "/test";
+        FileUtils.forceMkdir(new File(testDir));
+        FileUtils.touch(new File(testDir + "/a.txt"));
+        sftpRemoteConnection.createNewDirectory("/test");
+        sftpRemoteConnection.uploadDirectory(testDir, "/");
+        assertTrue(sftpRemoteConnection.copyDirectory("/test", "/copyTest"));
+        sftpRemoteConnection.deleteDirectory("/test");
+        sftpRemoteConnection.deleteDirectory("/copyTest");
+        FileUtils.deleteDirectory(new File(testDir));
+    }
+
+    @Test
+    public void copyRemoteDirDoesntExist_SFTP() throws FTPClientException, IOException {
+        assertFalse(sftpRemoteConnection.copyDirectory("/test_I_hope_doesnt_exist", "/copyTest"));
     }
 
     @Test

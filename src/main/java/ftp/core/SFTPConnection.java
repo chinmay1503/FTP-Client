@@ -2,11 +2,11 @@ package ftp.core;
 
 import com.jcraft.jsch.*;
 
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.codehaus.plexus.util.FileUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -319,20 +319,19 @@ public class SFTPConnection implements RemoteConnection {
                 }
                 System.out.println("Working Directory = " + System.getProperty("user.dir"));
                 System.out.println(sftpChannel.pwd());
-                downloadDirectory(sftpChannel.pwd() + sourceDir, tempFolderWithDes);
+                downloadDirectory("/" + sourceDir, tempFolderWithDes);
                 if (!checkDirectoryExists(desDir)) {
                     sftpChannel.mkdir(desDir);
                 }
-                uploadDirectory(tempFolderWithDes, sftpChannel.pwd());
+                uploadDirectory(tempFolderWithDes, "/");
                 FileUtils.deleteDirectory(new File(tempFolder));
+                return true;
             }
-            else {
-                return false;
-            }
+            System.out.println(sourceDir + " directory does not exist");
+            return false;
         } catch (SftpException e) {
             throw new FTPClientException(e);
         }
-        return false;
     }
 
     /**
@@ -505,12 +504,10 @@ public class SFTPConnection implements RemoteConnection {
                         System.out.println(remoteParentDir + "/" + sourceFile.getName() + " not found");
                     }
                     // else create a directory
-                    if (attrs != null) {
-
-                    } else {
-
+                    if (attrs == null) {
                         sftpChannel.mkdir(sourceFile.getName());
                     }
+                    sftpChannel.cd("..");
                     for (File f : files) {
                         uploadDirectory(f.getAbsolutePath(), remoteParentDir + "/" + sourceFile.getName());
                     }
