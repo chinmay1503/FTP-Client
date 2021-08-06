@@ -142,12 +142,31 @@ public class FTP_ClientTest {
     }
 
     @Test
+    public void downloadSingleFileFromRemote_FTP() throws FTPClientException {
+        try {
+            ftpRemoteConnection.downloadSingleFile(localDummyFilePath.toString(), "/");
+        } catch (IOException e) {
+            throw new FTPClientException(e);
+        }
+    }
+
+    @Test
     public void downloadSingleFileFromRemote_SFTP() throws FTPClientException {
         try {
             sftpRemoteConnection.downloadSingleFile(localDummyFilePath.toString(), "/");
         } catch (IOException e) {
             throw new FTPClientException(e);
         }
+    }
+
+    @Test
+    public void downloadNonExistentSingleFileFromRemote_FTP() throws FTPClientException, IOException {
+        assertFalse(ftpRemoteConnection.downloadSingleFile(localDummyFilePath.toString(), "/foo-non-existent-file.txt"));
+    }
+
+    @Test
+    public void downloadNonExistentSingleFileFromRemote_SFTP() throws FTPClientException, IOException {
+        assertFalse(sftpRemoteConnection.downloadSingleFile(localDummyFilePath.toString(), "/foo-non-existent-file.txt"));
     }
 
     @Test
