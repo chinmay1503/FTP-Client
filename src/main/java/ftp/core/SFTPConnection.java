@@ -277,7 +277,6 @@ public class SFTPConnection implements RemoteConnection {
         try {
             attrs = sftpChannel.stat(dirPath);
         } catch (SftpException e) {
-            logger.error(dirPath + " not found");
             return false;
         }
         return attrs != null && attrs.isDir();
@@ -299,7 +298,7 @@ public class SFTPConnection implements RemoteConnection {
                 return true;
             }
             else {
-                System.out.println(oldName + " does not exist");
+                System.out.println(oldName + " file does not exist");
                 return false;
             }
         } catch (SftpException e) {
@@ -318,14 +317,13 @@ public class SFTPConnection implements RemoteConnection {
                 if (!theDir.exists()) {
                     theDir.mkdirs();
                 }
-                System.out.println("Working Directory = " + System.getProperty("user.dir"));
-                System.out.println(sftpChannel.pwd());
                 downloadDirectory("/" + sourceDir, tempFolderWithDes);
                 if (!checkDirectoryExists(desDir)) {
                     sftpChannel.mkdir(desDir);
                 }
                 uploadDirectory(tempFolderWithDes, "/");
                 FileUtils.deleteDirectory(new File(tempFolder));
+                System.out.println("Copy Successful.");
                 return true;
             }
             System.out.println(sourceDir + " directory does not exist");
@@ -561,6 +559,11 @@ public class SFTPConnection implements RemoteConnection {
             logger.error("Error. Could not change permissions or invalid chmod code. See the message above.");
             return false;
         }
+    }
+
+    @Override
+    public void searchFile(String userOption, File theDir) {
+        FTPUtils.searchFile(userOption, theDir);
     }
 
 }

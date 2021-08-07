@@ -31,10 +31,10 @@ public class FTPUtils {
     public static boolean renameLocalFile(String oldName, String newName) throws FTPClientException {
         try {
             if (org.codehaus.plexus.util.FileUtils.fileExists(oldName)) {
-                logger.info("Going to rename file from :[" + oldName + "] to [" + newName + "]");
+                System.out.println("Going to rename file from :[" + oldName + "] to [" + newName + "]");
                 org.codehaus.plexus.util.FileUtils.rename(new File(oldName), new File(newName));
             } else {
-                logger.info("File with name :[" + oldName + "] does not exist");
+                System.out.println("File with name :[" + oldName + "] does not exist");
                 return false;
             }
             return true;
@@ -160,6 +160,23 @@ public class FTPUtils {
         logger.info("Its a new Client.");
         logger.debug("End of functionality - checking if its a new client login.");
         return true;
+    }
+
+    public static void searchFile(String userOption, File theDir) {
+        File[] the_list = theDir.listFiles();
+
+        for (int i = 0; i < the_list.length; i++) {
+            if (the_list[i].isFile() && the_list[i].getName().equals(userOption)) {
+                System.out.println(the_list[i].getPath() + userOption + " found");
+            }
+            if (the_list[i].isDirectory() && the_list[i].getName().equals(userOption))
+            {
+                System.out.println(the_list[i].getPath() + userOption + " is a directory not file");
+            }
+            if (i == (the_list.length - 1)) {
+                System.out.println("no luck is this directory try another");
+            }
+        }
     }
 
 }

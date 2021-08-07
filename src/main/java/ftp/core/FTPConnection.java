@@ -572,5 +572,10 @@ public class FTPConnection implements RemoteConnection {
         return false;
     }
 
+    @Override
+    public void searchFile(String userOption, File theDir) {
+        FTPUtils.searchFile(userOption, theDir);
+    }
+
 }
 

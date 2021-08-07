@@ -386,16 +386,18 @@ public class FTPClient {
                                 break;
 
                             case "11":
-                                System.out.println("10. Rename file on local machine\n");
-                                String oldLocalName = FTPUtils.getInputFromUser(scan, "Enter name of file to rename", "oldLocalName");
-                                String newLocalName = FTPUtils.getInputFromUser(scan, "Enter new name", "newLocalName");
-                                boolean local_rename_success = remoteConnection.renameLocalFile(oldLocalName, newLocalName);
-                                if (local_rename_success) {
-                                    System.out.println("[" + oldLocalName + "] was renamed to: [" + newLocalName + "]");
-                                    logger.info("[" + oldLocalName + "] was renamed to: [" + newLocalName + "]");
+                                System.out.println("11. Rename file on local machine\n");
+                                String oldLocalName = FTPUtils.getInputFromUser(scan, "Enter Absolute path of file to rename", "oldLocalName");
+                                String newLocalName = FTPUtils.getInputFromUser(scan, "Enter new name with Absolute path", "newLocalName");
+                                if(remoteConnection.checkLocalDirectoryExists(newLocalName)){
+                                    System.out.println(newLocalName + " already exists");
                                 } else {
-                                    System.out.println("Failed to rename: [" + oldLocalName + "]");
-                                    logger.info("Failed to rename: [" + oldLocalName + "]");
+                                    boolean local_rename_success = remoteConnection.renameLocalFile(oldLocalName, newLocalName);
+                                    if (local_rename_success) {
+                                        System.out.println("[" + oldLocalName + "] was renamed to: [" + newLocalName + "]");
+                                    } else {
+                                        System.out.println("Failed to rename: [" + oldLocalName + "]");
+                                    }
                                 }
                                 break;
 
@@ -445,32 +447,14 @@ public class FTPClient {
 
                             case "15":
                                 System.out.println("15. Search file on local machine\n");
-				userOption = getInputFromUser(scan, "Ener name of file you wish to search for", "userOption");
-				String userOption1 = getInputFromUser(scan, "Enter name of path of file to search for", "userOption1:");
-				File theDir = new File(userOption1);
+                                userOption = FTPUtils.getInputFromUser(scan, "Enter name of file you wish to search for", "userOption");
+                                String userOption1 = FTPUtils.getInputFromUser(scan, "Enter name of path of file to search for", "userOption1:");
+                                File theDir = new File(userOption1);
 
-				if(!theDir.isDirectory())
-				{
-					System.out.println("Not directory");
-				}
-				File the_list = theDir.listFiles();
-
-				for (int i = 0; i < the_list.length; i++)
-				{
-					if(the_list[i].isFile() && the_list[i].getName().equals(userOption))
-					{
-						System.out.println(the_list[i].getPath() + userOption + " found");
-					}
-					if(the_list[i].isDirectory() && the_list[i].getName(),equals(userOption))
-					{
-						System.out.println(the_list[i].getPath() + userOption + " is a directory not file");
-					}
-					if(i == (the_list.length - 1))
-					{
-						System.out.println("no luck is this directory try another");
-					}
-
-				}
+                                if (!theDir.isDirectory()) {
+                                    System.out.println("Not directory");
+                                }
+                                remoteConnection.searchFile(userOption, theDir);
                                 break;
 
                             case "16":
