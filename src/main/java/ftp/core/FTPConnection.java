@@ -310,9 +310,16 @@ public class FTPConnection implements RemoteConnection {
     @Override
     public boolean renameRemoteFile(String oldName, String newName) throws FTPClientException {
         try {
-            return client.rename(oldName, newName);
+            if (checkFileExists(oldName)) {
+                return client.rename(oldName, newName);
+            }
+            else {
+                System.out.println(oldName + " does not exist");
+                return false;
+            }
         } catch (IOException e) {
-            throw new FTPClientException(e);
+            System.out.println(newName + " already exists");
+            return false;
         }
     }
 

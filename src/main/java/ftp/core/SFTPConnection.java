@@ -300,10 +300,12 @@ public class SFTPConnection implements RemoteConnection {
                 return true;
             }
             else {
+                System.out.println(oldName + " does not exist");
                 return false;
             }
         } catch (SftpException e) {
-            throw new FTPClientException(e);
+            System.out.println(newName + " already exists");
+            return false;
         }
     }
 
