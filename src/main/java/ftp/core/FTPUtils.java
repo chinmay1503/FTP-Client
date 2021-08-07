@@ -94,7 +94,7 @@ public class FTPUtils {
             userIndex = Integer.parseInt(getInputFromUser(scan, "\nEnter Option", "userIndex"));
             inputStream.close();
         } catch (IOException e){
-            e.printStackTrace();
+            System.out.println("--Error Occurred when trying to list client credentials.--");
         }
         if(userIndex == i){
             return new ArrayList<>();
@@ -128,7 +128,7 @@ public class FTPUtils {
                 logger.info("new client credentials are stored.");
             } catch (IOException e) {
                 logger.info("Error Occurred - error occurred while trying to store new user credentials.");
-                e.printStackTrace();
+                System.out.println("Error Occurred - error occurred while trying to store new user credentials.");
             }
         }
         logger.debug("End of functionality - Store new client credentials");
@@ -155,7 +155,7 @@ public class FTPUtils {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("--Error Occurred when trying to read client credentials file.--");
         }
         logger.info("Its a new Client.");
         logger.debug("End of functionality - checking if its a new client login.");
