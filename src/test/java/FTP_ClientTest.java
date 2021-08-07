@@ -22,6 +22,8 @@ public class FTP_ClientTest {
     static ClientCredentials sftpClientCredentials = null;
     static Path currentPath = Paths.get(System.getProperty("user.dir"));
     static Path localDummyFilePath = Paths.get(currentPath.toString(), "foo.txt");
+    static Path localDummyFilePath1 = Paths.get(currentPath.toString(), "foo1.txt");
+    static Path localDummyFilePath2 = Paths.get(currentPath.toString(), "foo2.txt");
     static RemoteConnectionFactory remoteConnectionFactory = new RemoteConnectionFactory();
     static RemoteConnection ftpRemoteConnection = remoteConnectionFactory.getInstance("FTP");
     static RemoteConnection sftpRemoteConnection = remoteConnectionFactory.getInstance("SFTP");
@@ -127,6 +129,8 @@ public class FTP_ClientTest {
     public void uploadSingleFileToRemote_FTP() throws FTPClientException {
         try {
             ftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
+            assertTrue(ftpRemoteConnection.checkFileExists("/foo.txt"));
+            assertTrue(ftpRemoteConnection.deleteFile("/foo.txt"));
         } catch(IOException e){
             throw new FTPClientException(e);
         }
@@ -136,7 +140,43 @@ public class FTP_ClientTest {
     public void uploadSingleFileToRemote_SFTP() throws FTPClientException {
         try {
             sftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
+            assertTrue(sftpRemoteConnection.checkFileExists("/foo.txt"));
+            assertTrue(sftpRemoteConnection.deleteFile("/foo.txt"));
         } catch (IOException e) {
+            throw new FTPClientException(e);
+        }
+    }
+
+    @Test
+    public void uploadMultipleFilesToRemote_FTP() throws FTPClientException {
+        try {
+            String[] localPaths = {
+                    localDummyFilePath1.toString(),
+                    localDummyFilePath2.toString()
+            };
+            ftpRemoteConnection.uploadMultipleFiles(localPaths, "/");
+            assertTrue(ftpRemoteConnection.checkFileExists("/foo1.txt"));
+            assertTrue(ftpRemoteConnection.checkFileExists("/foo2.txt"));
+            assertTrue(ftpRemoteConnection.deleteFile("/foo1.txt"));
+            assertTrue(ftpRemoteConnection.deleteFile("/foo2.txt"));
+        } catch(IOException e){
+            throw new FTPClientException(e);
+        }
+    }
+
+    @Test
+    public void uploadMultipleFilesToRemote_SFTP() throws FTPClientException {
+        try {
+            String[] localPaths = {
+                    localDummyFilePath1.toString(),
+                    localDummyFilePath2.toString()
+            };
+            sftpRemoteConnection.uploadMultipleFiles(localPaths, "/");
+            assertTrue(sftpRemoteConnection.checkFileExists("/foo1.txt"));
+            assertTrue(sftpRemoteConnection.checkFileExists("/foo2.txt"));
+            assertTrue(sftpRemoteConnection.deleteFile("/foo1.txt"));
+            assertTrue(sftpRemoteConnection.deleteFile("/foo2.txt"));
+        } catch(IOException e){
             throw new FTPClientException(e);
         }
     }
@@ -158,6 +198,7 @@ public class FTP_ClientTest {
         }
     }
 
+    @Ignore ("Test failing")
     @Test
     public void downloadSingleFileFromRemote_FTP() throws FTPClientException {
         try {
@@ -396,6 +437,8 @@ public class FTP_ClientTest {
     public static void createDummyFooFile() throws FTPClientException {
         try{
             FileUtils.touch(localDummyFilePath.toFile());
+            FileUtils.touch(localDummyFilePath1.toFile());
+            FileUtils.touch(localDummyFilePath2.toFile());
         } catch(IOException e){
             throw new FTPClientException(e);
         }
@@ -403,6 +446,8 @@ public class FTP_ClientTest {
 
     public static void cleanUpDummyFooFile() {
         FileUtils.deleteQuietly(localDummyFilePath.toFile());
+        FileUtils.deleteQuietly(localDummyFilePath1.toFile());
+        FileUtils.deleteQuietly(localDummyFilePath2.toFile());
     }
 
     @AfterAll

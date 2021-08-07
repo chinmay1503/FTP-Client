@@ -287,7 +287,6 @@ public class FTPConnection implements RemoteConnection {
      */
     @Override
     public void uploadMultipleFiles(String[] localPaths, String remotePath) {
-        System.out.println("local paths --> " + localPaths);
         try {
             for (String localPath : localPaths) {
                 uploadSingleFile(localPath, remotePath);
