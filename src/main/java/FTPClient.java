@@ -101,7 +101,7 @@ public class FTPClient {
                     password = FTPUtils.getInputFromUser(scan, "Password", "Password");
 
                     String protocolNum = FTPUtils.getInputFromUser(scan, "Select Protocol: 1. FTP \t 2. SFTP", "protocolNum");
-                    if (protocolNum.equals("1"))
+                    if ("1".equals(protocolNum))
                         protocol = "FTP";
                     else
                         protocol = "SFTP";
@@ -164,7 +164,7 @@ public class FTPClient {
 
             if (connected) {
                 FTPUtils.storeClientCredentials(hostName, userName, password, protocol);
-                if (protocol.equals("FTP"))
+                if ("FTP".equals(protocol))
                     System.out.println("\n--- Connected to Remote FTP Server ---\n");
                 else
                     System.out.println("\n--- Connected to Remote SFTP Server ---\n");
@@ -315,7 +315,7 @@ public class FTPClient {
                                     uploadMoreFiles = FTPUtils.getInputFromUser(scan, "Try again? (y/n)", "uploadMoreFiles");
                                 }
 
-                                if (uploadMoreFiles.equals("y")) {
+                                if ("y".equals(uploadMoreFiles)) {
                                     uploadMore = true;
                                 }
                             } while (uploadMore);
@@ -342,7 +342,7 @@ public class FTPClient {
                                     System.out.println("-- Error: could not create New Directory in remote server --\n" +
                                             "Directory may already exist. Do you want try creating Directory again ? (y/n)");
                                     String tryAgain = scan.nextLine();
-                                    if (tryAgain.equals("y")) {
+                                    if ("y".equals(tryAgain)) {
                                         tryCreatingDirAgain = true;
                                     }
                                 }
@@ -426,11 +426,11 @@ public class FTPClient {
                             String searchOption = FTPUtils.getInputFromUser(scan, "1. Search File With Keyword\n" +
                                     "2. Search File ending with Extension\n" +
                                     "Please Choose Options \"1 or 2\"", "searchOption");
-                            if (searchOption.equals("1")) {
+                            if ("1".equals(searchOption)) {
                                 String keyword = FTPUtils.getInputFromUser(scan, "Enter Search Keyword", "keyword");
                                 int fileCount = remoteConnection.searchFilesWithKeyword(searchFilePath, keyword);
                                 logger.info("The number of files found with keyword :[" + keyword + "] are [" + fileCount + "]");
-                            } else if (searchOption.equals("2")) {
+                            } else if ("2".equals(searchOption)) {
                                 String extension = FTPUtils.getInputFromUser(scan, "Enter Search File Extension", "extension");
                                 int fileCount = remoteConnection.searchFilesWithExtension(searchFilePath, extension);
                                 logger.info("The number of files found with extension :[" + extension + "] are [" + fileCount + "]");

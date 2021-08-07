@@ -130,7 +130,7 @@ public class SFTPConnection implements RemoteConnection {
             if (isDirectory(remoteDir)) {
                 Vector<ChannelSftp.LsEntry> dirList = sftpChannel.ls(remoteDir);
                 for (ChannelSftp.LsEntry entry : dirList) {
-                    if (!(entry.getFilename().equals(".") || entry.getFilename().equals(".."))) {
+                    if (!(".".equals(entry.getFilename()) || "..".equals(entry.getFilename()))) {
                         remoteDir = remoteDir.endsWith("/") ? remoteDir : remoteDir + "/";
                         if (entry.getAttrs().isDir()) {
                             deleteDirectory(remoteDir + entry.getFilename() + "/");
@@ -459,21 +459,21 @@ public class SFTPConnection implements RemoteConnection {
     public void downloadDirectory(String currentDir, String saveDir) throws IOException, FTPClientException {
         try {
             if(!checkLocalDirectoryExists(saveDir)) {
-                File dowloadLocation = new File(saveDir);
-                dowloadLocation.mkdirs();
+                File downloadLocation = new File(saveDir);
+                downloadLocation.mkdirs();
             }
             if (checkDirectoryExists(currentDir)) {
                 Vector<ChannelSftp.LsEntry> list = sftpChannel.ls(currentDir);
-                for (ChannelSftp.LsEntry oListItem : list) {
-                    if (!oListItem.getAttrs().isDir()) {
-                        if (!(new File(saveDir + "/" + oListItem.getFilename())).exists() ||
-                                (oListItem.getAttrs().getMTime() > Long.valueOf(new File(saveDir + "/" + oListItem.getFilename()).lastModified() / (long) 1000).intValue())) {
-                            new File(saveDir + "/" + oListItem.getFilename());
-                            sftpChannel.get(currentDir + "/" + oListItem.getFilename(), saveDir + "/" + oListItem.getFilename());
+                for (ChannelSftp.LsEntry listItem : list) {
+                    if (!listItem.getAttrs().isDir()) {
+                        if (!(new File(saveDir + "/" + listItem.getFilename())).exists() ||
+                                (listItem.getAttrs().getMTime() > Long.valueOf(new File(saveDir + "/" + listItem.getFilename()).lastModified() / (long) 1000).intValue())) {
+                            new File(saveDir + "/" + listItem.getFilename());
+                            sftpChannel.get(currentDir + "/" + listItem.getFilename(), saveDir + "/" + listItem.getFilename());
                         }
-                    } else if (!(".".equals(oListItem.getFilename()) || "..".equals(oListItem.getFilename()))) {
-                        new File(saveDir + "/" + oListItem.getFilename()).mkdirs();
-                        downloadDirectory(currentDir + "/" + oListItem.getFilename(), saveDir + "/" + oListItem.getFilename());
+                    } else if (!(".".equals(listItem.getFilename()) || "..".equals(listItem.getFilename()))) {
+                        new File(saveDir + "/" + listItem.getFilename()).mkdirs();
+                        downloadDirectory(currentDir + "/" + listItem.getFilename(), saveDir + "/" + listItem.getFilename());
                     }
                 }
             }

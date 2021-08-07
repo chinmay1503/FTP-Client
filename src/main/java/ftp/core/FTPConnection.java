@@ -362,7 +362,7 @@ public class FTPConnection implements RemoteConnection {
     public void downloadDirectory(String currentDir, String saveDir) throws IOException, FTPClientException {
         String parentDir = client.printWorkingDirectory();
         String dirToList = parentDir;
-        if (!currentDir.equals("")) {
+        if (!"".equals(currentDir)) {
             dirToList += "/" + currentDir;
         }
 
@@ -371,19 +371,19 @@ public class FTPConnection implements RemoteConnection {
         if (subFiles != null && subFiles.length > 0) {
             for (FTPFile aFile : subFiles) {
                 String currentFileName = aFile.getName();
-                if (currentFileName.equals(".") || currentFileName.equals("..")) {
+                if (".".equals(currentFileName) || "..".equals(currentFileName)) {
                     // skip parent directory and the directory itself
                     continue;
                 }
                 String filePath = parentDir + "/" + currentDir + "/"
                         + currentFileName;
-                if (currentDir.equals("")) {
+                if ("".equals(currentDir)) {
                     filePath = parentDir + "/" + currentFileName;
                 }
 
                 String newDirPath = saveDir + parentDir + File.separator
                         + currentDir + File.separator + currentFileName;
-                if (currentDir.equals("")) {
+                if ("".equals(currentDir)) {
                     newDirPath = saveDir + parentDir + File.separator
                             + currentFileName;
                 }
@@ -514,7 +514,7 @@ public class FTPConnection implements RemoteConnection {
         if (subFiles != null && subFiles.length > 0) {
             for (File item : subFiles) {
                 String remoteFilePath =  "/" + remoteParentDir;
-                if (remoteParentDir.equals("")) {
+                if ("".equals(remoteParentDir)) {
                     remoteFilePath = remoteDirPath;
                 }
                 if (item.isFile()) {
@@ -534,7 +534,7 @@ public class FTPConnection implements RemoteConnection {
 
                     // upload the sub directory
 
-                    if (remoteParentDir.equals("")) {
+                    if ("".equals(remoteParentDir)) {
                         remoteSubDirPath = item.getName();
                     }
 
