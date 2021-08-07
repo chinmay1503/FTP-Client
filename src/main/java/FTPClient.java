@@ -91,7 +91,8 @@ public class FTPClient {
                         hostName = selectedUserDetails.get(2);
                         protocol = selectedUserDetails.get(3);
                         System.out.println("Connecting to:\nUserName: " + userName + "\tserver: " + hostName + "\tProtocol: " + protocol);
-                        password = FTPUtils.getInputFromUser(scan, "Password", "Password");
+//                        password = FTPUtils.getInputFromUser(scan, "Password", "Password");
+                        password = selectedUserDetails.get(1);
                     }
                     break;
 
@@ -168,7 +169,10 @@ public class FTPClient {
 
             if (connected) {
                 FTPUtils.storeClientCredentials(hostName, userName, password, protocol);
-                System.out.println("\n--- Connected to Remote FTP Server ---\n");
+                if(protocol.equals("FTP"))
+                    System.out.println("\n--- Connected to Remote FTP Server ---\n");
+                else
+                    System.out.println("\n--- Connected to Remote SFTP Server ---\n");
                 showOptions();
 
                 // Provide respective functionality to user, based on their choice.
@@ -215,8 +219,9 @@ public class FTPClient {
 
                                 //Call method from case 11 to download entire directory
                                 if ("y".equalsIgnoreCase(userOptions)) {
-                                    System.out.println("Enter Destination to download to: ");
-
+                                    String dirPath = FTPUtils.getInputFromUser(scan, "Enter remote Directory Path", "dirPath");
+                                    String localPath = FTPUtils.getInputFromUser(scan, "Enter Destination to download to", "local_Path");
+                                    remoteConnection.downloadDirectory(dirPath, localPath);
                                 }
                                 //Prompt and download each file from the remote path
                                 else {
@@ -227,7 +232,7 @@ public class FTPClient {
                                     do {
                                         downloadMore = false;
                                         do {
-                                            String remote_Path = FTPUtils.getInputFromUser(scan, "Enter remote path, where you wish to download from", "remote_Path");
+                                            String remote_Path = FTPUtils.getInputFromUser(scan, "Enter remote path of the file you wish to download", "remote_Path");
                                             promptForRemoteFile = remoteConnection.checkFileExists(remote_Path);
 
                                             if (!promptForRemoteFile) {
@@ -253,16 +258,23 @@ public class FTPClient {
                                  *This code was inspired by https://www.geeksforgeeks.org/java-program-to-display-all-the-directories-in-a-directory/
                                  */
                                 System.out.println("4. list directories & files on local machine\n");
-                                File curDir = new File(".");
+                                String curDirStr= "";
+                                File curDir = null;
+                                boolean askAgain;
+                                do {
+                                    curDirStr = FTPUtils.getInputFromUser(scan, "Enter local Location", "curDir");
+                                    curDir = new File(curDirStr);
+                                    if (!remoteConnection.checkLocalDirectoryExists(curDirStr)) {
+                                        System.out.println("-- Please enter valid Directory Path --");
+                                        askAgain = true;
+                                    } else {
+                                        askAgain = false;
+                                    }
+                                } while (askAgain);
+
                                 File[] filesList = curDir.listFiles();
                                 for (int i = 0; i < filesList.length; i++) {
-                                    if (filesList[i].isDirectory()) {
-                                        System.out.println(filesList[i].getName() + " this is a directory");
-
-                                    } else {
-
-                                        System.out.println(filesList[i].getName() + " this is a file");
-                                    }
+                                    System.out.println(filesList[i].getName());
                                 }
                                 break;
 
