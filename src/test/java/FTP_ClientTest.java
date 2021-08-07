@@ -329,7 +329,7 @@ public class FTP_ClientTest {
     }
 
     @Test
-    public void renameRemoteFileExist_FTP() throws FTPClientException, IOException {
+    public void renameRemoteFileOldExistNewDoesntExist_FTP() throws FTPClientException, IOException {
         ftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
         assertTrue(ftpRemoteConnection.renameRemoteFile("/foo.txt", "/bar.txt"));
         ftpRemoteConnection.deleteFile("/bar.txt");
@@ -341,7 +341,14 @@ public class FTP_ClientTest {
     }
 
     @Test
-    public void renameRemoteFileExist_SFTP() throws FTPClientException, IOException {
+    public void renameRemoteFileOldExistNewExist_FTP () throws FTPClientException, IOException {
+        ftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
+        assertFalse(ftpRemoteConnection.renameRemoteFile("/foo.txt", "/foo.txt"));
+        ftpRemoteConnection.deleteFile("/foo.txt");
+    }
+
+    @Test
+    public void renameRemoteFileOldExistNewDoesntExist_SFTP() throws FTPClientException, IOException {
         sftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
         assertTrue(sftpRemoteConnection.renameRemoteFile("/foo.txt", "/bar.txt"));
         sftpRemoteConnection.deleteFile("/bar.txt");
@@ -350,6 +357,13 @@ public class FTP_ClientTest {
     @Test
     public void renameRemoteFileDoesntExist_SFTP() throws FTPClientException, IOException {
         assertFalse(sftpRemoteConnection.renameRemoteFile("/this_file_does_not_exist_I_hope.txt", "/bar.txt"));
+    }
+
+    @Test
+    public void renameRemoteFileOldExistNewExist_SFTP () throws FTPClientException, IOException {
+        sftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
+        assertFalse(sftpRemoteConnection.renameRemoteFile("/foo.txt", "/foo.txt"));
+        sftpRemoteConnection.deleteFile("/foo.txt");
     }
 
     @Test
