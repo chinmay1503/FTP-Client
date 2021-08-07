@@ -51,4 +51,6 @@ public interface RemoteConnection {
     boolean renameLocalFile(String oldName, String newName) throws FTPClientException;
 
     boolean changePermission(String permissions, String inputPath);
+
+    void searchFile(String userOption, File theDir);
 }

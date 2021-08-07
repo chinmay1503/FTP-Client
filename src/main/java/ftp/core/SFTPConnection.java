@@ -203,7 +203,6 @@ public class SFTPConnection implements RemoteConnection {
      */
     @Override
     public void uploadMultipleFiles(String[] localPaths, String remotePath) {
-        System.out.println("local paths --> " + localPaths);
         try {
             for (String localPath : localPaths) {
                 uploadSingleFile(localPath, remotePath);
@@ -278,7 +277,6 @@ public class SFTPConnection implements RemoteConnection {
         try {
             attrs = sftpChannel.stat(dirPath);
         } catch (SftpException e) {
-            logger.error(dirPath + " not found");
             return false;
         }
         return attrs != null && attrs.isDir();
@@ -300,7 +298,7 @@ public class SFTPConnection implements RemoteConnection {
                 return true;
             }
             else {
-                System.out.println(oldName + " does not exist");
+                System.out.println(oldName + " file does not exist");
                 return false;
             }
         } catch (SftpException e) {
@@ -319,14 +317,13 @@ public class SFTPConnection implements RemoteConnection {
                 if (!theDir.exists()) {
                     theDir.mkdirs();
                 }
-                System.out.println("Working Directory = " + System.getProperty("user.dir"));
-                System.out.println(sftpChannel.pwd());
                 downloadDirectory("/" + sourceDir, tempFolderWithDes);
                 if (!checkDirectoryExists(desDir)) {
                     sftpChannel.mkdir(desDir);
                 }
                 uploadDirectory(tempFolderWithDes, "/");
                 FileUtils.deleteDirectory(new File(tempFolder));
+                System.out.println("Copy Successful.");
                 return true;
             }
             System.out.println(sourceDir + " directory does not exist");
@@ -348,14 +345,17 @@ public class SFTPConnection implements RemoteConnection {
     @Override
     public boolean downloadSingleFile(String localPath, String remotePath) throws IOException, FTPClientException {
         try {
+            if(!checkLocalDirectoryExists(localPath)){
+                File dowloadLocation = new File(localPath);
+                dowloadLocation.mkdirs();
+            }
             String fileName = getFileNameFromRemote(remotePath);
             String outputLocation = localPath + File.separator + fileName;
             sftpChannel.get(remotePath, outputLocation);
             logger.info("Downloading file : [" + fileName + "] from remote location");
             return true;
         } catch (SftpException e) {
-            throw new FTPClientException(e);
-        } finally {
+            logger.error("Error Downloading file : [" + remotePath + "] from remote location");
             return false;
         }
     }
@@ -370,7 +370,6 @@ public class SFTPConnection implements RemoteConnection {
      */
     @Override
     public boolean downloadMultipleFiles(String[] remotePaths, String localPath) throws IOException {
-        System.out.println("Remote paths --> " + remotePaths);
         try {
             for (String remotePath : remotePaths) {
                 downloadSingleFile(localPath, remotePath);
@@ -459,22 +458,28 @@ public class SFTPConnection implements RemoteConnection {
     @Override
     public void downloadDirectory(String currentDir, String saveDir) throws IOException, FTPClientException {
         try {
-            Vector<ChannelSftp.LsEntry> list = sftpChannel.ls(currentDir); // List source directory structure.
-            for (ChannelSftp.LsEntry oListItem : list) { // Iterate objects in the list to get file/folder names.
-                if (!oListItem.getAttrs().isDir()) { // If it is a file (not a directory).
-                    if (!(new File(saveDir + "/" + oListItem.getFilename())).exists() || (oListItem.getAttrs().getMTime() > Long.valueOf(new File(saveDir + "/" + oListItem.getFilename()).lastModified() / (long) 1000).intValue())) { // Download only if changed later.
-                        new File(saveDir + "/" + oListItem.getFilename());
-                        sftpChannel.get(currentDir + "/" + oListItem.getFilename(), saveDir + "/" + oListItem.getFilename()); // Grab file from source ([source filename], [destination filename]).
+            if(!checkLocalDirectoryExists(saveDir)) {
+                File dowloadLocation = new File(saveDir);
+                dowloadLocation.mkdirs();
+            }
+            if (checkDirectoryExists(currentDir)) {
+                Vector<ChannelSftp.LsEntry> list = sftpChannel.ls(currentDir);
+                for (ChannelSftp.LsEntry oListItem : list) {
+                    if (!oListItem.getAttrs().isDir()) {
+                        if (!(new File(saveDir + "/" + oListItem.getFilename())).exists() ||
+                                (oListItem.getAttrs().getMTime() > Long.valueOf(new File(saveDir + "/" + oListItem.getFilename()).lastModified() / (long) 1000).intValue())) {
+                            new File(saveDir + "/" + oListItem.getFilename());
+                            sftpChannel.get(currentDir + "/" + oListItem.getFilename(), saveDir + "/" + oListItem.getFilename());
+                        }
+                    } else if (!(".".equals(oListItem.getFilename()) || "..".equals(oListItem.getFilename()))) {
+                        new File(saveDir + "/" + oListItem.getFilename()).mkdirs();
+                        downloadDirectory(currentDir + "/" + oListItem.getFilename(), saveDir + "/" + oListItem.getFilename());
                     }
-                } else if (!(".".equals(oListItem.getFilename()) || "..".equals(oListItem.getFilename()))) {
-                    new File(saveDir + "/" + oListItem.getFilename()).mkdirs(); // Empty folder copy.
-                    downloadDirectory(currentDir + "/" + oListItem.getFilename(), saveDir + "/" + oListItem.getFilename()); // Enter found folder on server to read its contents and create locally.
                 }
             }
-        }catch (SftpException e) {
+        } catch (SftpException e) {
             throw new FTPClientException(e);
         }
-        return;
     }
 
     @Override
@@ -554,6 +559,11 @@ public class SFTPConnection implements RemoteConnection {
             logger.error("Error. Could not change permissions or invalid chmod code. See the message above.");
             return false;
         }
+    }
+
+    @Override
+    public void searchFile(String userOption, File theDir) {
+        FTPUtils.searchFile(userOption, theDir);
     }
 
 }
