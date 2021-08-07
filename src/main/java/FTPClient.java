@@ -445,7 +445,32 @@ public class FTPClient {
 
                             case "15":
                                 System.out.println("15. Search file on local machine\n");
-                                System.out.println("coming soon ... \n");
+				userOption = getInputFromUser(scan, "Ener name of file you wish to search for", "userOption");
+				String userOption1 = getInputFromUser(scan, "Enter name of path of file to search for", "userOption1:");
+				File theDir = new File(userOption1);
+
+				if(!theDir.isDirectory())
+				{
+					System.out.println("Not directory");
+				}
+				File the_list = theDir.listFiles();
+
+				for (int i = 0; i < the_list.length; i++)
+				{
+					if(the_list[i].isFile() && the_list[i].getName().equals(userOption))
+					{
+						System.out.println(the_list[i].getPath() + userOption + " found");
+					}
+					if(the_list[i].isDirectory() && the_list[i].getName(),equals(userOption))
+					{
+						System.out.println(the_list[i].getPath() + userOption + " is a directory not file");
+					}
+					if(i == (the_list.length - 1))
+					{
+						System.out.println("no luck is this directory try another");
+					}
+
+				}
                                 break;
 
                             case "16":
