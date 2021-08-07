@@ -79,14 +79,17 @@ public class FTPConnection implements RemoteConnection {
      * @throws IOException - can throw exception while handling files.
      */
     @Override
-    public boolean createNewDirectory(String dirName) throws IOException {
+    public boolean createNewDirectory(String dirName) throws IOException, FTPClientException {
         try {
-            return client.makeDirectory(dirName);
+            if (!checkDirectoryExists(dirName)) {
+                client.makeDirectory(dirName);
+            }
         } catch (SocketException e) {
             System.out.println("Something went wrong, when trying to create directory \"" + dirName + "\"\n" +
                     "Give valid Directory path/ name .");
+            return false;
         }
-        return false;
+        return true;
     }
 
     /**
@@ -390,15 +393,14 @@ public class FTPConnection implements RemoteConnection {
                     }
 
                     // download the sub directory
-                    downloadDirectory(currentFileName, saveDir);
+                    downloadDirectory(filePath, saveDir);
                 } else {
                     // download the file
                     boolean success = downloadSingleFile(newDirPath, filePath);
                     if (success) {
                         System.out.println("DOWNLOADED the file: " + filePath);
                     } else {
-                        System.out.println("COULD NOT download the file: "
-                                + filePath);
+                        System.out.println("COULD NOT download the file: " + filePath);
                     }
                 }
             }
@@ -417,7 +419,6 @@ public class FTPConnection implements RemoteConnection {
     @Override
     public boolean downloadSingleFile(String localPath, String remoteFilePath) throws IOException, FTPClientException {
         File downloadFile = new File(localPath);
-
         File parentDir = downloadFile.getParentFile();
         if (!parentDir.exists()) {
             parentDir.mkdir();
@@ -506,13 +507,10 @@ public class FTPConnection implements RemoteConnection {
         File[] subFiles = localDir.listFiles();
         if (subFiles != null && subFiles.length > 0) {
             for (File item : subFiles) {
-                String remoteFilePath = remoteDirPath + "/" + remoteParentDir
-                        + "/" + item.getName();
+                String remoteFilePath =  "/" + remoteParentDir;
                 if (remoteParentDir.equals("")) {
-                    remoteFilePath = remoteDirPath + "/" + item.getName();
+                    remoteFilePath = remoteDirPath;
                 }
-
-
                 if (item.isFile()) {
                     // upload the file
                     String localFilePath = item.getAbsolutePath();
@@ -520,23 +518,22 @@ public class FTPConnection implements RemoteConnection {
                     uploadSingleFile(localFilePath, remoteFilePath);
                 } else {
                     // create directory on the server
-                    boolean created = client.makeDirectory(remoteFilePath);
+                    String remoteSubDirPath = "/" + remoteParentDir + "/" + item.getName();
+                    boolean created = client.makeDirectory(remoteSubDirPath);
                     if (created) {
-                        System.out.println("CREATED the directory: "
-                                + remoteFilePath);
+                        System.out.println("CREATED the directory: " + remoteSubDirPath);
                     } else {
-                        System.out.println("COULD NOT create the directory: "
-                                + remoteFilePath);
+                        System.out.println("COULD NOT create the directory: " + remoteSubDirPath);
                     }
 
                     // upload the sub directory
-                    String parent = remoteParentDir + "/" + item.getName();
+
                     if (remoteParentDir.equals("")) {
-                        parent = item.getName();
+                        remoteSubDirPath = item.getName();
                     }
 
                     localParentDir = item.getAbsolutePath();
-                    uploadDirectory(localParentDir, parent);
+                    uploadDirectory(localParentDir, remoteSubDirPath);
                 }
             }
         }

@@ -2,10 +2,11 @@ package ftp.core;
 
 import com.jcraft.jsch.*;
 
+
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.codehaus.plexus.util.FileUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -294,16 +295,43 @@ public class SFTPConnection implements RemoteConnection {
     @Override
     public boolean renameRemoteFile(String oldName, String newName) throws FTPClientException {
         try {
-            sftpChannel.rename(oldName, newName);
-            return true;
+            if (checkFileExists(oldName)) {
+                sftpChannel.rename(oldName, newName);
+                return true;
+            }
+            else {
+                return false;
+            }
         } catch (SftpException e) {
             throw new FTPClientException(e);
         }
     }
 
     @Override
-    public boolean copyDirectory(String toCopy, String newDir) throws FTPClientException, IOException {
-        return false;
+    public boolean copyDirectory(String sourceDir, String desDir) throws FTPClientException, IOException {
+        try {
+            if (checkDirectoryExists(sourceDir)) {
+                String tempFolder = System.getProperty("user.dir") + '\\' + "temp";
+                String tempFolderWithDes = System.getProperty("user.dir") + '\\' + "temp" + '\\' + desDir;
+                File theDir = new File(tempFolderWithDes);
+                if (!theDir.exists()) {
+                    theDir.mkdirs();
+                }
+                System.out.println("Working Directory = " + System.getProperty("user.dir"));
+                System.out.println(sftpChannel.pwd());
+                downloadDirectory("/" + sourceDir, tempFolderWithDes);
+                if (!checkDirectoryExists(desDir)) {
+                    sftpChannel.mkdir(desDir);
+                }
+                uploadDirectory(tempFolderWithDes, "/");
+                FileUtils.deleteDirectory(new File(tempFolder));
+                return true;
+            }
+            System.out.println(sourceDir + " directory does not exist");
+            return false;
+        } catch (SftpException e) {
+            throw new FTPClientException(e);
+        }
     }
 
     /**
@@ -325,6 +353,8 @@ public class SFTPConnection implements RemoteConnection {
             return true;
         } catch (SftpException e) {
             throw new FTPClientException(e);
+        } finally {
+            return false;
         }
     }
 
@@ -426,12 +456,68 @@ public class SFTPConnection implements RemoteConnection {
 
     @Override
     public void downloadDirectory(String currentDir, String saveDir) throws IOException, FTPClientException {
+        try {
+            Vector<ChannelSftp.LsEntry> list = sftpChannel.ls(currentDir); // List source directory structure.
+            for (ChannelSftp.LsEntry oListItem : list) { // Iterate objects in the list to get file/folder names.
+                if (!oListItem.getAttrs().isDir()) { // If it is a file (not a directory).
+                    if (!(new File(saveDir + "/" + oListItem.getFilename())).exists() || (oListItem.getAttrs().getMTime() > Long.valueOf(new File(saveDir + "/" + oListItem.getFilename()).lastModified() / (long) 1000).intValue())) { // Download only if changed later.
+                        new File(saveDir + "/" + oListItem.getFilename());
+                        sftpChannel.get(currentDir + "/" + oListItem.getFilename(), saveDir + "/" + oListItem.getFilename()); // Grab file from source ([source filename], [destination filename]).
+                    }
+                } else if (!(".".equals(oListItem.getFilename()) || "..".equals(oListItem.getFilename()))) {
+                    new File(saveDir + "/" + oListItem.getFilename()).mkdirs(); // Empty folder copy.
+                    downloadDirectory(currentDir + "/" + oListItem.getFilename(), saveDir + "/" + oListItem.getFilename()); // Enter found folder on server to read its contents and create locally.
+                }
+            }
+        }catch (SftpException e) {
+            throw new FTPClientException(e);
+        }
         return;
     }
 
     @Override
     public void uploadDirectory(String localParentDir, String remoteParentDir) throws IOException, FTPClientException {
-        return;
+        try {
+            File sourceFile = new File(localParentDir);
+            if (sourceFile.isFile()) {
+                // copy if it is a file
+                sftpChannel.cd(remoteParentDir);
+                if (!sourceFile.getName().startsWith(".")) {
+                    FileInputStream fileInputStream = null;
+                    try {
+                        fileInputStream = new FileInputStream(sourceFile);
+                        sftpChannel.put(fileInputStream, sourceFile.getName(), ChannelSftp.OVERWRITE);
+                    } finally {
+                        if(fileInputStream != null) {
+                            fileInputStream.close();
+                        }
+                    }
+
+                }
+            } else {
+                File[] files = sourceFile.listFiles();
+                if (files != null && !sourceFile.getName().startsWith(".")) {
+                    sftpChannel.cd(remoteParentDir);
+                    SftpATTRS attrs = null;
+                    // check if the directory is already existing
+                    try {
+                        attrs = sftpChannel.stat(remoteParentDir + "/" + sourceFile.getName());
+                    } catch (Exception e) {
+                        System.out.println(remoteParentDir + "/" + sourceFile.getName() + " not found");
+                    }
+                    // else create a directory
+                    if (attrs == null) {
+                        sftpChannel.mkdir(sourceFile.getName());
+                    }
+                    sftpChannel.cd("..");
+                    for (File f : files) {
+                        uploadDirectory(f.getAbsolutePath(), remoteParentDir + "/" + sourceFile.getName());
+                    }
+                }
+            }
+        }catch (SftpException e) {
+            throw new FTPClientException(e);
+        }
     }
 
     /**

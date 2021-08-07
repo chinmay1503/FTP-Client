@@ -1,6 +1,8 @@
 package ftp.core;
 
 import org.apache.commons.net.ftp.FTPClient;
+
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 

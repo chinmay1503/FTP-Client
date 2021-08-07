@@ -173,9 +173,7 @@ public class FTPClient {
 
                 // Provide respective functionality to user, based on their choice.
                 while (repeatProcess) {
-                    System.out.println("Choose your Option : ");
-                    userOption = scan.nextLine();
-
+                    userOption = getInputFromUser(scan, "Choose your Option", "userOption");
                         switch (userOption) {
                             case "1":
                                 System.out.println("1. list directories & files on remote server\n");
@@ -191,8 +189,7 @@ public class FTPClient {
 
                                 // Prompt user for remote file to be downloaded
                                 do {
-                                    System.out.println("Enter File Name to download from Remote Server: \n");
-                                    remoteFileUserInput = scan.nextLine();
+                                    remoteFileUserInput = getInputFromUser(scan, "Enter File Name to download from Remote Server", "remoteFileUserInput");
                                     promptForRemoteFile = remoteConnection.checkFileExists(remoteFileUserInput);
                                     if (!promptForRemoteFile) {
                                         System.out.println("-- Error: could not locate Directory with the name " + remoteFileUserInput +
@@ -201,8 +198,7 @@ public class FTPClient {
                                 } while (!promptForRemoteFile);
 
                                 do {
-                                    System.out.println("Enter File Path to download to: \n");
-                                    localPathUserInput = scan.nextLine();
+                                    localPathUserInput = getInputFromUser(scan, "\"Enter File Path to download to", "localPathUserInput");
                                     promptForLocalPath = remoteConnection.checkLocalDirectoryExists(localPathUserInput);
                                     if (!promptForLocalPath) {
                                         System.out.println("-- Error: could not locate Directory with the name " + localPathUserInput +
@@ -224,17 +220,14 @@ public class FTPClient {
                                 }
                                 //Prompt and download each file from the remote path
                                 else {
-                                    System.out.println("Enter Destination to download to: ");
-                                    String local_Path = scan.nextLine();
-
+                                    String local_Path = getInputFromUser(scan, "Enter Destination to download to", "local_Path");
                                     Set<String> downloadFilesSet = new HashSet<>();
                                     boolean downloadMore;
 
                                     do {
                                         downloadMore = false;
                                         do {
-                                            System.out.println("Enter remote path, where you wish to download from: ");
-                                            String remote_Path = scan.nextLine();
+                                            String remote_Path = getInputFromUser(scan, "Enter remote path, where you wish to download from", "remote_Path");
                                             promptForRemoteFile = remoteConnection.checkFileExists(remote_Path);
 
                                             if (!promptForRemoteFile) {
@@ -245,8 +238,7 @@ public class FTPClient {
                                             }
                                         } while (!promptForRemoteFile);
 
-                                        System.out.println("Do you want to upload another File ? (y/n)");
-                                        String downloadMoreFiles = scan.nextLine();
+                                        String downloadMoreFiles = getInputFromUser(scan, "Do you want to download another File? (y/n)", "downloadMoreFiles");
                                         if ("y".equalsIgnoreCase(downloadMoreFiles)) {
                                             downloadMore = true;
                                         }
@@ -332,8 +324,8 @@ public class FTPClient {
                                 boolean tryCreatingDirAgain;
                                 do {
                                     tryCreatingDirAgain = false;
-                                    System.out.println("Enter Directory Name: (relative path or absolute path)");
-                                    String dirName = scan.nextLine();
+                                    String dirName = getInputFromUser(scan, "Enter Directory Name: (relative path or absolute path)", "dirName");
+
                                     boolean newDirStatus = remoteConnection.createNewDirectory(dirName);
                                     if (newDirStatus) {
                                         logger.info("Directory created Successfully");
@@ -462,7 +454,7 @@ public class FTPClient {
                             System.out.println("Do you want to choose other option? (y/n): ");
                             repeat = scan.nextLine();
                         }
-                        if (repeat.equalsIgnoreCase("n")) {
+                        if ("n".equalsIgnoreCase(repeat)) {
                             repeatProcess = false;
                         }
                     }
