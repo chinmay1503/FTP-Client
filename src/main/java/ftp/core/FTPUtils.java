@@ -168,10 +168,12 @@ public class FTPUtils {
         for (int i = 0; i < the_list.length; i++) {
             if (the_list[i].isFile() && the_list[i].getName().equals(userOption)) {
                 System.out.println(the_list[i].getPath() + userOption + " found");
+                break;
             }
             if (the_list[i].isDirectory() && the_list[i].getName().equals(userOption))
             {
-                System.out.println(the_list[i].getPath() + userOption + " is a directory not file");
+                System.out.println(the_list[i].getPath() +" "+ userOption + " is a directory not file");
+                break;
             }
             if (i == (the_list.length - 1)) {
                 System.out.println("no luck is this directory try another");

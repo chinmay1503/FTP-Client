@@ -47,4 +47,14 @@ public class ClientCredentials {
     public void setProtocol(String protocol) {
         this.protocol = protocol;
     }
+
+    public String encryptPassword(String password) {
+        String encryptedPassword = "";
+        return encryptedPassword;
+    }
+
+    public String decryptPassword(String encryptedPassword) {
+        String plainPassword = "";
+        return plainPassword;
+    }
 }

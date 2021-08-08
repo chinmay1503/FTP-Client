@@ -108,12 +108,18 @@ public class SFTPConnection implements RemoteConnection {
     @Override
     public boolean deleteFile(String filePath) throws FTPClientException {
         try {
-            logger.debug("Going to delete file :[" + filePath + "]");
-            sftpChannel.rm(filePath);
-            logger.debug("File deleted successfully.");
-            return true;
+            if (!isDirectory(filePath)) {
+                System.out.println("Going to delete file :[" + filePath + "]");
+                sftpChannel.rm(filePath);
+                System.out.println("File deleted successfully.");
+                return true;
+            } else {
+                System.out.println("Expecting a file. Please enter valid file path.");
+                return false;
+            }
         } catch (SftpException e) {
-            throw new FTPClientException(e);
+            System.out.println("Failed due to: " + e.getMessage());
+            return false;
         }
     }
 
@@ -510,7 +516,7 @@ public class SFTPConnection implements RemoteConnection {
                     try {
                         attrs = sftpChannel.stat(remoteParentDir + "/" + sourceFile.getName());
                     } catch (Exception e) {
-                        System.out.println(remoteParentDir + "/" + sourceFile.getName() + " not found");
+                        logger.debug(remoteParentDir + "/" + sourceFile.getName() + " not found. creating it now.");
                     }
                     // else create a directory
                     if (attrs == null) {
