@@ -289,39 +289,44 @@ public class FTPClient {
                             logger.debug("starting functionality - Put multiple files on remote server");
 
                             System.out.println("6. Put multiple files on remote server\n");
-
                             String remote_Path = FTPUtils.getInputFromUser(scan, "Enter Destination", "remote_Path");
 
-                            Set<String> uploadFilesSet = new HashSet<>();
-                            boolean uploadMore;
-                            boolean isValidPath;
-                            String uploadMoreFiles;
+                            String userOpt = FTPUtils.getInputFromUser(scan, "Would you like to upload the contents of the entire directory? y/n\n", "userOption");
+                            if ("y".equalsIgnoreCase(userOpt)) {
+                                String localDirPath = FTPUtils.getInputFromUser(scan, "Enter local Directory Path", "dirPath");
+                                remoteConnection.uploadDirectory(localDirPath, remote_Path);
+                            } else {
+                                Set<String> uploadFilesSet = new HashSet<>();
+                                boolean uploadMore;
+                                boolean isValidPath;
+                                String uploadMoreFiles;
 
-                            do {
-                                uploadMore = false;
+                                do {
+                                    uploadMore = false;
 
-                                String local_Path = FTPUtils.getInputFromUser(scan, "Enter Local file path, that you want to upload", "local_Path");
-                                File localFile = new File(local_Path);
-                                if (localFile.isFile()) {
-                                    uploadFilesSet.add(local_Path);
-                                    isValidPath = true;
-                                } else {
-                                    System.out.println("Error: The local path provided is not valid.\n");
-                                    isValidPath = false;
-                                }
-                                if (isValidPath) {
-                                    uploadMoreFiles = FTPUtils.getInputFromUser(scan, "Do you want to upload another File ? (y/n)", "uploadMoreFiles");
-                                } else {
-                                    uploadMoreFiles = FTPUtils.getInputFromUser(scan, "Try again? (y/n)", "uploadMoreFiles");
-                                }
+                                    String local_Path = FTPUtils.getInputFromUser(scan, "Enter Local file path, that you want to upload", "local_Path");
+                                    File localFile = new File(local_Path);
+                                    if (localFile.isFile()) {
+                                        uploadFilesSet.add(local_Path);
+                                        isValidPath = true;
+                                    } else {
+                                        System.out.println("Error: The local path provided is not valid.\n");
+                                        isValidPath = false;
+                                    }
+                                    if (isValidPath) {
+                                        uploadMoreFiles = FTPUtils.getInputFromUser(scan, "Do you want to upload another File ? (y/n)", "uploadMoreFiles");
+                                    } else {
+                                        uploadMoreFiles = FTPUtils.getInputFromUser(scan, "Try again? (y/n)", "uploadMoreFiles");
+                                    }
 
-                                if ("y".equals(uploadMoreFiles)) {
-                                    uploadMore = true;
-                                }
-                            } while (uploadMore);
-                            remoteConnection.uploadMultipleFiles(Arrays.copyOf(uploadFilesSet.toArray(), uploadFilesSet.toArray().length, String[].class), remote_Path);
+                                    if ("y".equals(uploadMoreFiles)) {
+                                        uploadMore = true;
+                                    }
+                                } while (uploadMore);
+                                remoteConnection.uploadMultipleFiles(Arrays.copyOf(uploadFilesSet.toArray(), uploadFilesSet.toArray().length, String[].class), remote_Path);
 
-                            logger.debug("End of functionality - Put multiple files on remote server");
+                                logger.debug("End of functionality - Put multiple files on remote server");
+                            }
                             break;
 
                         case "7":
@@ -410,7 +415,7 @@ public class FTPClient {
 
                         case "13":
                             System.out.println("13. Delete file from remote server\n");
-                            String filePath = FTPUtils.getInputFromUser(scan, "Please enter the file path to the remote directory you would like to delete", "filePath");
+                            String filePath = FTPUtils.getInputFromUser(scan, "Please enter the remote file path you would like to delete", "filePath");
                             if (remoteConnection.deleteFile(filePath)) {
                                 logger.debug("File deleted successfully.");
                                 System.out.println("File deleted Successfully. \n");
@@ -422,7 +427,18 @@ public class FTPClient {
 
                         case "14":
                             System.out.println("14. Search file on remote server\n");
-                            String searchFilePath = FTPUtils.getInputFromUser(scan, "Please enter the folder path to the remote directory", "searchFilePath");
+                            String searchFilePath = "";
+                            boolean askOptAgain;
+                            do {
+                                searchFilePath = FTPUtils.getInputFromUser(scan, "Please enter the folder path to the remote directory", "searchFilePath");
+                                if (!remoteConnection.checkDirectoryExists(searchFilePath)) {
+                                    System.out.println("-- Please enter valid remote Directory Path --");
+                                    askOptAgain = true;
+                                } else {
+                                    askOptAgain = false;
+                                }
+                            } while (askOptAgain);
+
                             String searchOption = FTPUtils.getInputFromUser(scan, "1. Search File With Keyword\n" +
                                     "2. Search File ending with Extension\n" +
                                     "Please Choose Options \"1 or 2\"", "searchOption");
@@ -442,14 +458,16 @@ public class FTPClient {
 
                         case "15":
                             System.out.println("15. Search file on local machine\n");
-                            userOption = FTPUtils.getInputFromUser(scan, "Enter name of file you wish to search for", "userOption");
-                            String userOption1 = FTPUtils.getInputFromUser(scan, "Enter name of path of file to search for", "userOption1:");
-                            File theDir = new File(userOption1);
+                            userOption = FTPUtils.getInputFromUser(scan, "Enter local file name", "userOption");
+                            String local_file_path = FTPUtils.getInputFromUser(scan, "Enter local file path", "local_file_path:");
+                            File theDir = new File(local_file_path);
 
                             if (!theDir.isDirectory()) {
-                                System.out.println("Not directory");
+                                System.out.println("Error: Not valid local Directory path.");
                             }
-                            remoteConnection.searchFile(userOption, theDir);
+                            if(remoteConnection.checkLocalDirectoryExists(local_file_path)){
+                                remoteConnection.searchFile(userOption, theDir);
+                            }
                             break;
 
                         case "16":
