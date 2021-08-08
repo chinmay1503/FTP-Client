@@ -4,7 +4,6 @@ import com.jcraft.jsch.*;
 
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.net.ftp.FTPClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,7 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.InputStream;
-import java.io.*;
 import java.util.ArrayList;
 import java.util.Vector;
 
@@ -180,7 +178,7 @@ public class SFTPConnection implements RemoteConnection {
         File localFile = new File(localFilePath);
         if (localFile.isFile()) {
             remoteFilePath = remotePath + "/" + localFile.getName();
-            if (checkDirectoryExists(remotePath)) {
+            if (checkRemoteDirectoryExists(remotePath)) {
                 try (InputStream inputStream = new FileInputStream(localFile)) {
                     sftpChannel.put(inputStream, remoteFilePath);
                     logger.info("file upload successful");
@@ -230,7 +228,7 @@ public class SFTPConnection implements RemoteConnection {
     @Override
     public boolean createNewDirectory(String dirName) throws FTPClientException {
         try {
-            if (!checkDirectoryExists(dirName)) {
+            if (!checkRemoteDirectoryExists(dirName)) {
                 sftpChannel.mkdir(dirName);
             }
             return true;
@@ -278,7 +276,7 @@ public class SFTPConnection implements RemoteConnection {
      * @throws FTPClientException
      */
     @Override
-    public boolean checkDirectoryExists(String dirPath) throws FTPClientException {
+    public boolean checkRemoteDirectoryExists(String dirPath) throws FTPClientException {
         SftpATTRS attrs = null;
         try {
             attrs = sftpChannel.stat(dirPath);
@@ -316,7 +314,7 @@ public class SFTPConnection implements RemoteConnection {
     @Override
     public boolean copyDirectory(String sourceDir, String desDir) throws FTPClientException, IOException {
         try {
-            if (checkDirectoryExists(sourceDir)) {
+            if (checkRemoteDirectoryExists(sourceDir)) {
                 String tempFolder = System.getProperty("user.dir") + '\\' + "temp";
                 String tempFolderWithDes = System.getProperty("user.dir") + '\\' + "temp" + '\\' + desDir;
                 File theDir = new File(tempFolderWithDes);
@@ -324,7 +322,7 @@ public class SFTPConnection implements RemoteConnection {
                     theDir.mkdirs();
                 }
                 downloadDirectory("/" + sourceDir, tempFolderWithDes);
-                if (!checkDirectoryExists(desDir)) {
+                if (!checkRemoteDirectoryExists(desDir)) {
                     sftpChannel.mkdir(desDir);
                 }
                 uploadDirectory(tempFolderWithDes, "/");
@@ -352,8 +350,8 @@ public class SFTPConnection implements RemoteConnection {
     public boolean downloadSingleFile(String localPath, String remotePath) throws IOException, FTPClientException {
         try {
             if(!checkLocalDirectoryExists(localPath)){
-                File dowloadLocation = new File(localPath);
-                dowloadLocation.mkdirs();
+                File downloadLocation = new File(localPath);
+                downloadLocation.mkdirs();
             }
             String fileName = getFileNameFromRemote(remotePath);
             String outputLocation = localPath + File.separator + fileName;
@@ -468,7 +466,7 @@ public class SFTPConnection implements RemoteConnection {
                 File downloadLocation = new File(saveDir);
                 downloadLocation.mkdirs();
             }
-            if (checkDirectoryExists(currentDir)) {
+            if (checkRemoteDirectoryExists(currentDir)) {
                 Vector<ChannelSftp.LsEntry> list = sftpChannel.ls(currentDir);
                 for (ChannelSftp.LsEntry listItem : list) {
                     if (!listItem.getAttrs().isDir()) {
