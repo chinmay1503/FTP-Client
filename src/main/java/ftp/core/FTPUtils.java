@@ -180,6 +180,8 @@ public class FTPUtils {
                     System.out.println("no luck in this directory try another");
                 }
             }
+        } else {
+            System.out.println("No files found in this folder");
         }
     }
 
