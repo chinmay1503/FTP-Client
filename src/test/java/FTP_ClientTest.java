@@ -328,6 +328,11 @@ public class FTP_ClientTest {
     }
 
     @Test
+    public void searchFilesLocally() throws FTPClientException {
+        FTPUtils.searchFile("foo.txt", currentPath.toFile());
+    }
+
+    @Test
     public void renameRemoteFileOldExistNewDoesntExist_FTP() throws FTPClientException, IOException {
         ftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
         assertTrue(ftpRemoteConnection.renameRemoteFile("/foo.txt", "/bar.txt"));
