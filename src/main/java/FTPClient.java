@@ -214,7 +214,12 @@ public class FTPClient {
                             if ("y".equalsIgnoreCase(userOptions)) {
                                 String dirPath = FTPUtils.getInputFromUser(scan, "Enter remote Directory Path", "dirPath");
                                 String localPath = FTPUtils.getInputFromUser(scan, "Enter Destination to download to", "local_Path");
-                                remoteConnection.downloadDirectory(dirPath, localPath);
+
+                                if (remoteConnection.downloadDirectory(dirPath, localPath)) {
+                                    System.out.println(dirPath + " successfully downloaded to " + localPath);
+                                } else {
+                                    System.out.println("Failed to download " + dirPath);
+                                }
                             }
                             //Prompt and download each file from the remote directory
                             else {
@@ -291,7 +296,12 @@ public class FTPClient {
                             String userOpt = FTPUtils.getInputFromUser(scan, "Would you like to upload the contents of the entire directory? y/n\n", "userOption");
                             if ("y".equalsIgnoreCase(userOpt)) {
                                 String localDirPath = FTPUtils.getInputFromUser(scan, "Enter local Directory Path", "dirPath");
-                                remoteConnection.uploadDirectory(localDirPath, remote_Path);
+                                if (remoteConnection.uploadDirectory(localDirPath, remote_Path)) {
+                                    System.out.println(localDirPath + " successfully uploaded to " + remote_Path);
+                                }
+                                else {
+                                    System.out.println("Failed to upload " + localDirPath);
+                                }
                             } else {
                                 Set<String> uploadFilesSet = new HashSet<>();
                                 boolean uploadMore;
@@ -372,13 +382,13 @@ public class FTPClient {
 
                         case "10":
                             System.out.println("10. Rename file on remote server\n");
-                            String oldName = FTPUtils.getInputFromUser(scan, "Enter name of file to rename", "oldName");
+                            String oldName = FTPUtils.getInputFromUser(scan, "Enter path of file to rename", "oldName");
                             String newName = FTPUtils.getInputFromUser(scan, "Enter new name", "newName");
                             boolean success = remoteConnection.renameRemoteFile(oldName, newName);
                             if (success) {
-                                System.out.println(oldName + " was renamed to: " + newName);
+                                System.out.println(oldName + " was renamed to " + newName);
                             } else {
-                                System.out.println("Failed to rename: " + oldName);
+                                System.out.println("Failed to rename " + oldName);
                             }
                             break;
 
@@ -400,7 +410,7 @@ public class FTPClient {
 
                         case "12":
                             System.out.println("12. Copy directories on remote server\n");
-                            String sourceDir = FTPUtils.getInputFromUser(scan, "Enter name of source directory to copy", "sourceDir");
+                            String sourceDir = FTPUtils.getInputFromUser(scan, "Enter path of source directory to copy", "sourceDir");
                             String desDir = FTPUtils.getInputFromUser(scan, "Enter name of new copy", "desDir");
                             while (sourceDir.equals(desDir)) {
                                 System.out.println("Copy cannot have the same name");

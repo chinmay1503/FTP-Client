@@ -299,10 +299,11 @@ public class FTPConnection implements RemoteConnection {
     }
 
     /**
+     * This method is used to create a copy of a directory on remote server.
      *
-     * @param sourceDir
-     * @param desDir
-     * @return
+     * @param sourceDir - the name of the directory you want to copy.
+     * @param desDir - the name of the new copy
+     * @return [boolean]
      * @throws FTPClientException
      * @throws IOException
      */
@@ -314,14 +315,13 @@ public class FTPConnection implements RemoteConnection {
             if (!theDir.exists()) {
                 theDir.mkdirs();
             }
-            System.out.println("Working Directory = " + System.getProperty("user.dir"));
-
             downloadDirectory(client.printWorkingDirectory() + sourceDir, tempFolder);
             if (!checkRemoteDirectoryExists(desDir)) {
                 client.makeDirectory(desDir);
             }
             uploadDirectory(tempFolder + '\\' + sourceDir, desDir);
             FileUtils.deleteDirectory(new File(tempFolder));
+            System.out.println("Successfully made a copy of " + sourceDir + " called " + desDir);
             return true;
         }
         System.out.println(sourceDir + " directory does not exist");
@@ -329,61 +329,48 @@ public class FTPConnection implements RemoteConnection {
     }
 
     /**
+     * This method is used to download a directory on the remote server onto local.
      *
      * @param currentDir
      * @param saveDir
+     * @return [boolean]
      * @throws IOException
      * @throws FTPClientException
      */
     @Override
-    public void downloadDirectory(String currentDir, String saveDir) throws IOException, FTPClientException {
+    public boolean downloadDirectory(String currentDir, String saveDir) throws IOException, FTPClientException {
         String parentDir = client.printWorkingDirectory();
         String dirToList = parentDir;
         if (!"".equals(currentDir)) {
             dirToList += "/" + currentDir;
         }
-
         FTPFile[] subFiles = client.listFiles(dirToList);
 
         if (subFiles != null && subFiles.length > 0) {
             for (FTPFile aFile : subFiles) {
                 String currentFileName = aFile.getName();
                 if (".".equals(currentFileName) || "..".equals(currentFileName)) {
-                    // skip parent directory and the directory itself
                     continue;
                 }
                 String filePath = parentDir + "/" + currentDir + "/" + currentFileName;
                 if ("".equals(currentDir)) {
                     filePath = parentDir + "/" + currentFileName;
                 }
-
                 String newDirPath = saveDir + parentDir + File.separator + currentDir + File.separator + currentFileName;
                 if ("".equals(currentDir)) {
                     newDirPath = saveDir + parentDir + File.separator + currentFileName;
                 }
-
                 if (aFile.isDirectory()) {
-                    // create the directory in saveDir
                     File newDir = new File(newDirPath);
-                    boolean created = newDir.mkdirs();
-                    if (created) {
-                        System.out.println("CREATED the directory: " + newDirPath);
-                    } else {
-                        System.out.println("COULD NOT create the directory: " + newDirPath);
-                    }
-
-                    // download the sub directory
+                    newDir.mkdirs();
                     downloadDirectory(filePath, saveDir);
                 } else {
-                    // download the file
-                    boolean success = downloadSingleFile(newDirPath, filePath);
-                    if (success) {
-                        System.out.println("DOWNLOADED the file: " + filePath);
-                    } else {
-                        System.out.println("COULD NOT download the file: " + filePath);
-                    }
+                    downloadSingleFile(newDirPath, filePath);
                 }
             }
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -494,16 +481,17 @@ public class FTPConnection implements RemoteConnection {
     }
 
     /**
+     * This method is used to upload a directory on local onto the remote server.
      *
      * @param localParentDir
      * @param remoteParentDir
+     * @return [boolean]
      * @throws IOException
      * @throws FTPClientException
      */
     @Override
-    public void uploadDirectory(String localParentDir, String remoteParentDir) throws IOException, FTPClientException {
+    public boolean uploadDirectory(String localParentDir, String remoteParentDir) throws IOException, FTPClientException {
         String remoteDirPath = client.printWorkingDirectory();
-        System.out.println("LISTING directory: " + localParentDir);
 
         File localDir = new File(localParentDir);
         File[] subFiles = localDir.listFiles();
@@ -514,30 +502,22 @@ public class FTPConnection implements RemoteConnection {
                     remoteFilePath = remoteDirPath;
                 }
                 if (item.isFile()) {
-                    // upload the file
                     String localFilePath = item.getAbsolutePath();
-                    System.out.println("About to upload the file: " + localFilePath);
                     uploadSingleFile(localFilePath, remoteFilePath);
                 } else {
-                    // create directory on the server
                     String remoteSubDirPath = "/" + remoteParentDir + "/" + item.getName();
-                    boolean created = client.makeDirectory(remoteSubDirPath);
-                    if (created) {
-                        System.out.println("CREATED the directory: " + remoteSubDirPath);
-                    } else {
-                        System.out.println("COULD NOT create the directory: " + remoteSubDirPath);
-                    }
-
-                    // upload the sub directory
-
+                    client.makeDirectory(remoteSubDirPath);
                     if ("".equals(remoteParentDir)) {
                         remoteSubDirPath = item.getName();
                     }
-
                     localParentDir = item.getAbsolutePath();
                     uploadDirectory(localParentDir, remoteSubDirPath);
                 }
             }
+            return true;
+        }
+        else {
+            return false;
         }
     }
 
