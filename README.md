@@ -12,7 +12,7 @@ The application is build using the Design Pattern called "Factory Pattern" (Supp
 * Filezilla (Remote FTP Server)
 * Rebex Buru (SFTP Remote Server)
 
-# How to execute the Application
+## How to execute the Application
 The executable file "SFTP-Client.exe" is present in the "\out\artifacts". Simply Execute it and follow on-screen instructions.
 
 ## Basic Features
