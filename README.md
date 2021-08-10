@@ -2,7 +2,7 @@
 
 # FTP-Client
 
-This project was developed for the course "CS-410/510 MDRN AGILE & Other Extreme Programming Software" at Portland State University under the guidance of professor "Christopher Gilmore"
+This project was developed for the course "CS-410/510 MDRN AGILE & Other Extreme Programming Software" at Portland State University under the guidance of professor "Christopher Gilmore"  
 The application is build using the Design Pattern called "Factory Pattern" (Supports both FTP and SFTP Protocol),
 Factory Pattern is a creational design pattern that provides an interface for creating objects in a superclass, 
 we create object without exposing the creation logic to the client and refer to newly created object using a common interface.
