@@ -5,15 +5,47 @@ public class ClientCredentials {
     String password;
     String server;
     String protocol;
+    EncryptionKeys ek = null;
 
-    public ClientCredentials(String userName, String password, String server, String protocol) {
+    public ClientCredentials() {
+    }
+    public ClientCredentials(String userName, String password, String server, String protocol) throws Exception {
+        EncryptionKeys ek1 = new EncryptionKeys(password);
+        setEk(ek1);
         this.userName = userName;
-        this.password = password;
+        this.password = getEk().getEncryptedPasswordString();
         this.server = server;
         this.protocol = protocol;
     }
 
-    public ClientCredentials() {
+    private String encodePassword(String password) {
+        StringBuffer sb = new StringBuffer();
+        char ch[] = password.toCharArray();
+        for(int i = 0; i < ch.length; i++) {
+            String hexString = Integer.toHexString(ch[i]);
+            sb.append(hexString);
+        }
+        String result = sb.toString();
+        return result;
+    }
+
+    public String decodePassword(String encodedPassword){
+        String result = new String();
+        char[] charArray = encodedPassword.toCharArray();
+        for(int i = 0; i < charArray.length; i=i+2) {
+            String st = ""+charArray[i]+""+charArray[i+1];
+            char ch = (char)Integer.parseInt(st, 16);
+            result = result + ch;
+        }
+        return result;
+    }
+
+    public EncryptionKeys getEk() {
+        return ek;
+    }
+
+    public void setEk(EncryptionKeys ek) {
+        this.ek = ek;
     }
 
     public String getUserName() {
@@ -25,7 +57,7 @@ public class ClientCredentials {
     }
 
     public String getPassword() {
-        return password;
+        return this.password;
     }
 
     public void setPassword(String password) {
@@ -48,13 +80,4 @@ public class ClientCredentials {
         this.protocol = protocol;
     }
 
-    public String encryptPassword(String password) {
-        String encryptedPassword = "";
-        return encryptedPassword;
-    }
-
-    public String decryptPassword(String encryptedPassword) {
-        String plainPassword = "";
-        return plainPassword;
-    }
 }

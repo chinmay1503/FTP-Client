@@ -68,6 +68,7 @@ public class FTPUtils {
     public static ArrayList<String> listAllUserCredentials() {
         ArrayList<ArrayList<String> > aList =
                 new ArrayList<>();
+        Scanner scan = new Scanner(System.in);
         int userIndex = 0;
         int i = 1;
         try{
@@ -79,19 +80,25 @@ public class FTPUtils {
             for(ClientCredentials cc : allClients){
                 ArrayList<String> a1 = new ArrayList<>();
                 a1.add(cc.getUserName());
-                a1.add(cc.getPassword());
+                a1.add(cc.getEk().getPasswordString());
                 a1.add(cc.getServer());
                 a1.add(cc.getProtocol());
                 aList.add(a1);
                 System.out.println(i + ". userName: " + cc.getUserName() + "\tserver: " + cc.getServer() + "\tProtocol: " + cc.getProtocol());
                 i = i + 1;
             }
-            if(i == 1){
-                System.out.println("Sorry, No saved Connections. You will have to enter all Credentials (choose below option)");
-            }
             System.out.println(i + ". None of the above. Enter New Credentials");
-            Scanner scan = new Scanner(System.in);
-            userIndex = Integer.parseInt(getInputFromUser(scan, "\nEnter Option", "userIndex"));
+            if(i == 1){
+                System.out.println("Sorry, No saved Connections. You will have to enter all Credentials.");
+                userIndex = i;
+            } else {
+                do {
+                    userIndex = Integer.parseInt(getInputFromUser(scan, "\nEnter Option", "userIndex"));
+                    if(userIndex > i){
+                        System.out.println("-- Please choose from above options only. --");
+                    }
+                } while(userIndex > i);
+            }
             inputStream.close();
         } catch (IOException e){
             System.out.println("--Error Occurred when trying to list client credentials.--");
@@ -126,8 +133,8 @@ public class FTPUtils {
 
                 inputStream.close();
                 logger.info("new client credentials are stored.");
-            } catch (IOException e) {
-                logger.info("Error Occurred - error occurred while trying to store new user credentials.");
+            } catch (Exception e) {
+                logger.debug("Error Occurred - error occurred while trying to store new user credentials.");
                 System.out.println("Error Occurred - error occurred while trying to store new user credentials.");
             }
         }
@@ -150,14 +157,14 @@ public class FTPUtils {
             List<ClientCredentials> clients = mapper.readValue(inputStream, type); // [obj, obj]
             for (ClientCredentials cc : clients) {
                 if (cc.getUserName().equals(userName)) {
-                    logger.info("Client details already saved.");
+                    logger.debug("Client details already saved.");
                     return false;
                 }
             }
         } catch (IOException e) {
             System.out.println("--Error Occurred when trying to read client credentials file.--");
         }
-        logger.info("Its a new Client.");
+        logger.debug("Its a new Client.");
         logger.debug("End of functionality - checking if its a new client login.");
         return true;
     }
@@ -177,7 +184,7 @@ public class FTPUtils {
                     break;
                 }
                 if (i == (the_list.length - 1)) {
-                    System.out.println("no luck in this directory try another");
+                    System.out.println("file not found in the given location.");
                 }
             }
         } else {

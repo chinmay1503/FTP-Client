@@ -38,7 +38,7 @@ public class FTP_ClientTest {
             connectFTPRemote();
             connectSFTPRemote();
             createDummyFooFile();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new FTPClientException(e);
         } finally {
             if (fs != null) {
@@ -47,7 +47,7 @@ public class FTP_ClientTest {
         }
     }
 
-    private static void populateTestClientCredentials() {
+    private static void populateTestClientCredentials() throws Exception {
         ftpClientCredentials = new ClientCredentials(prop.getProperty("ftp_username"), prop.getProperty("ftp_password"), prop.getProperty("ftp_hostname"), "FTP");
         sftpClientCredentials = new ClientCredentials(prop.getProperty("sftp_username"), prop.getProperty("sftp_password"), prop.getProperty("sftp_hostname"), "SFTP");
     }
@@ -56,7 +56,7 @@ public class FTP_ClientTest {
         RemoteConnectionFactory remoteConnectionFactory = new RemoteConnectionFactory();
         RemoteConnection remoteConnection = remoteConnectionFactory.getInstance(clientCredentials.getProtocol());
         boolean connected = false;
-        int connected_value = remoteConnection.connect(clientCredentials.getServer(), clientCredentials.getUserName(), clientCredentials.getPassword());
+        int connected_value = remoteConnection.connect(clientCredentials.getServer(), clientCredentials.getUserName(), clientCredentials.getEk().getPasswordString());
         if(connected_value == 1){
             connected = true;
         }
@@ -198,28 +198,6 @@ public class FTP_ClientTest {
     }
 
     @Test
-    public void downloadSingleFileFromRemote_FTP() throws FTPClientException {
-        try {
-            String curDir = System.getProperty("user.dir");
-            String testDir = curDir + "/test";
-            FileUtils.forceMkdir(new File(testDir));
-            FileUtils.touch(new File(curDir + "/abc.txt"));
-            ftpRemoteConnection.uploadSingleFile(curDir + "/abc.txt", "/");
-            ftpRemoteConnection.downloadSingleFile(testDir, "/abc.txt");
-            ftpRemoteConnection.deleteFile("/abc.txt");
-            FileUtils.deleteDirectory(new File(testDir));
-            FileUtils.forceDelete(new File(curDir + "/abc.txt"));
-        } catch (IOException e) {
-            throw new FTPClientException(e);
-        }
-    }
-
-    @Test
-    public void downloadNonExistentSingleFileFromRemote_FTP() throws FTPClientException, IOException {
-        assertFalse(ftpRemoteConnection.downloadSingleFile(localDummyFilePath.toString(), "/foo-non-existent-file.txt"));
-    }
-
-    @Test
     public void downloadNonExistentSingleFileFromRemote_SFTP() throws FTPClientException, IOException {
         assertFalse(sftpRemoteConnection.downloadSingleFile(localDummyFilePath.toString(), "/foo-non-existent-file.txt"));
     }
@@ -231,22 +209,19 @@ public class FTP_ClientTest {
     }
 
     @Test
-    public void deleteNonExistentFileFromRemote_FTP() throws FTPClientException {
+    public void deleteNonExistentFileFromRemote_FTP() {
         assertFalse(ftpRemoteConnection.deleteFile("/foo-non-existent-file.txt"));
     }
 
     @Test
     public void deleteDummyFileFromRemote_SFTP() throws FTPClientException, IOException {
-        //TODO: this test fails because of incomplete upload single file implementation
         sftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
         assertTrue(sftpRemoteConnection.deleteFile("/foo.txt"));
     }
 
     @Test
     public void deleteNonExistentFileFromRemote_SFTP() {
-        assertThrows(FTPClientException.class, () -> {
-            sftpRemoteConnection.deleteFile("/foo-non-existent-file.txt");
-        });
+        assertFalse(sftpRemoteConnection.deleteFile("/foo-non-existent-file.txt"));
     }
 
     @Test
@@ -289,7 +264,6 @@ public class FTP_ClientTest {
 
     @Test
     public void searchFilesWithKeyword_SFTP() throws FTPClientException, IOException {
-        //TODO: this test fails because of incomplete upload single file implementation
         sftpRemoteConnection.uploadSingleFile(localDummyFilePath.toString(), "/");
         int fileCount = sftpRemoteConnection.searchFilesWithKeyword("/", "foo");
         assertTrue(fileCount > 0);

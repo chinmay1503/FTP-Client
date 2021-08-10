@@ -47,14 +47,14 @@ public class FTPConnection implements RemoteConnection {
                 return 1;
             } else {
                 System.err.println("Username or password is incorrect");
-                 return 0;
+                return 0;
             }
         } catch (SocketException e) {
             System.err.println("Error occurred when trying to connect to Server");
         } catch (IOException e) {
             System.err.println("Error due to IOException");
         }
-         return 2;
+        return 2;
     }
 
     /**
@@ -177,12 +177,13 @@ public class FTPConnection implements RemoteConnection {
      * @throws FTPClientException
      */
     @Override
-    public boolean deleteFile(String filePath) throws FTPClientException {
+    public boolean deleteFile(String filePath) {
         try {
             logger.debug("Going to delete file :[" + filePath + "]");
             return client.deleteFile(filePath);
         } catch (IOException e) {
-            throw new FTPClientException(e);
+            System.out.println("Failed due to: " + e.getMessage());
+            return false;
         }
     }
 
@@ -237,12 +238,12 @@ public class FTPConnection implements RemoteConnection {
                 } finally {
                     inputStream.close();
                 }
-            if (uploaded) {
-                logger.info("file upload successful");
-                System.out.println("Upload Successful. Uploaded to: " + remoteFilePath );
-            } else {
-                logger.info("file upload Unsuccessful");
-                System.out.println("Error occurred when trying to upload the file: \""
+                if (uploaded) {
+                    logger.info("file upload successful");
+                    System.out.println("Upload Successful. Uploaded to: " + remoteFilePath );
+                } else {
+                    logger.info("file upload Unsuccessful");
+                    System.out.println("Error occurred when trying to upload the file: \""
                             + localFilePath + "\" to \"" + remoteFilePath + "\"");
                 }
             } else {
@@ -553,4 +554,3 @@ public class FTPConnection implements RemoteConnection {
     }
 
 }
-

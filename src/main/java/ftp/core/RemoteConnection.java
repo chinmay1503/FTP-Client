@@ -24,7 +24,7 @@ public interface RemoteConnection {
 
     boolean checkRemoteDirectoryExists(String dirPath) throws FTPClientException;
 
-    boolean deleteFile(String filePath) throws FTPClientException;
+    boolean deleteFile(String filePath);
 
     boolean deleteDirectory(String dirPath) throws  FTPClientException;
 
