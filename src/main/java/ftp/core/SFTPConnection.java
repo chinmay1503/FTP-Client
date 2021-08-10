@@ -313,6 +313,15 @@ public class SFTPConnection implements RemoteConnection {
         }
     }
 
+    /**
+     * This method is used to create a copy of a directory on remote server.
+     *
+     * @param sourceDir - the name of the directory you want to copy.
+     * @param desDir - the name of the new copy
+     * @return [boolean]
+     * @throws FTPClientException
+     * @throws IOException
+     */
     @Override
     public boolean copyDirectory(String sourceDir, String desDir) throws FTPClientException, IOException {
         try {
@@ -329,7 +338,7 @@ public class SFTPConnection implements RemoteConnection {
                 }
                 uploadDirectory(tempFolderWithDes, "/");
                 FileUtils.deleteDirectory(new File(tempFolder));
-                System.out.println("Copy Successful.");
+                System.out.println("Successfully made a copy of " + sourceDir + " called " + desDir);
                 return true;
             }
             System.out.println(sourceDir + " directory does not exist");
@@ -461,75 +470,101 @@ public class SFTPConnection implements RemoteConnection {
         return result.size();
     }
 
+    /**
+     * This method is used to download a directory on the remote server onto local.
+     *
+     * @param currentDir
+     * @param saveDir
+     * @return [boolean]
+     * @throws IOException
+     * @throws FTPClientException
+     */
     @Override
-    public void downloadDirectory(String currentDir, String saveDir) throws IOException, FTPClientException {
-        try {
-            if(!checkLocalDirectoryExists(saveDir)) {
-                File downloadLocation = new File(saveDir);
-                downloadLocation.mkdirs();
-            }
-            if (checkDirectoryExists(currentDir)) {
-                Vector<ChannelSftp.LsEntry> list = sftpChannel.ls(currentDir);
-                for (ChannelSftp.LsEntry listItem : list) {
-                    if (!listItem.getAttrs().isDir()) {
-                        if (!(new File(saveDir + "/" + listItem.getFilename())).exists() ||
-                                (listItem.getAttrs().getMTime() > Long.valueOf(new File(saveDir + "/" + listItem.getFilename()).lastModified() / (long) 1000).intValue())) {
-                            new File(saveDir + "/" + listItem.getFilename());
-                            sftpChannel.get(currentDir + "/" + listItem.getFilename(), saveDir + "/" + listItem.getFilename());
+    public boolean downloadDirectory(String currentDir, String saveDir) throws IOException, FTPClientException {
+        if (checkDirectoryExists(currentDir)) {
+            try {
+                if (!checkLocalDirectoryExists(saveDir)) {
+                    File downloadLocation = new File(saveDir);
+                    downloadLocation.mkdirs();
+                }
+                if (checkDirectoryExists(currentDir)) {
+                    Vector<ChannelSftp.LsEntry> list = sftpChannel.ls(currentDir);
+                    for (ChannelSftp.LsEntry listItem : list) {
+                        if (!listItem.getAttrs().isDir()) {
+                            if (!(new File(saveDir + "/" + listItem.getFilename())).exists() ||
+                                    (listItem.getAttrs().getMTime() > Long.valueOf(new File(saveDir + "/" + listItem.getFilename()).lastModified() / (long) 1000).intValue())) {
+                                new File(saveDir + "/" + listItem.getFilename());
+                                sftpChannel.get(currentDir + "/" + listItem.getFilename(), saveDir + "/" + listItem.getFilename());
+                            }
+                        } else if (!(".".equals(listItem.getFilename()) || "..".equals(listItem.getFilename()))) {
+                            new File(saveDir + "/" + listItem.getFilename()).mkdirs();
+                            downloadDirectory(currentDir + "/" + listItem.getFilename(), saveDir + "/" + listItem.getFilename());
                         }
-                    } else if (!(".".equals(listItem.getFilename()) || "..".equals(listItem.getFilename()))) {
-                        new File(saveDir + "/" + listItem.getFilename()).mkdirs();
-                        downloadDirectory(currentDir + "/" + listItem.getFilename(), saveDir + "/" + listItem.getFilename());
                     }
                 }
+            } catch (SftpException e) {
+                throw new FTPClientException(e);
             }
-        } catch (SftpException e) {
-            throw new FTPClientException(e);
+            return true;
+        } else {
+            return false;
         }
     }
 
+    /**
+     * This method is used to upload a directory on local onto the remote server.
+     *
+     * @param localParentDir
+     * @param remoteParentDir
+     * @return [boolean]
+     * @throws IOException
+     * @throws FTPClientException
+     */
     @Override
-    public void uploadDirectory(String localParentDir, String remoteParentDir) throws IOException, FTPClientException {
-        try {
-            File sourceFile = new File(localParentDir);
-            if (sourceFile.isFile()) {
-                // copy if it is a file
-                sftpChannel.cd(remoteParentDir);
-                if (!sourceFile.getName().startsWith(".")) {
-                    FileInputStream fileInputStream = null;
-                    try {
-                        fileInputStream = new FileInputStream(sourceFile);
-                        sftpChannel.put(fileInputStream, sourceFile.getName(), ChannelSftp.OVERWRITE);
-                    } finally {
-                        if(fileInputStream != null) {
-                            fileInputStream.close();
+    public boolean uploadDirectory(String localParentDir, String remoteParentDir) throws IOException, FTPClientException {
+        if (checkLocalDirectoryExists(localParentDir)) {
+            try {
+                File sourceFile = new File(localParentDir);
+                if (sourceFile.isFile()) {
+                    sftpChannel.cd(remoteParentDir);
+                    if (!sourceFile.getName().startsWith(".")) {
+                        FileInputStream fileInputStream = null;
+                        try {
+                            fileInputStream = new FileInputStream(sourceFile);
+                            sftpChannel.put(fileInputStream, sourceFile.getName(), ChannelSftp.OVERWRITE);
+                        } finally {
+                            if (fileInputStream != null) {
+                                fileInputStream.close();
+                            }
+                        }
+
+                    }
+                } else {
+                    File[] files = sourceFile.listFiles();
+                    if (files != null && !sourceFile.getName().startsWith(".")) {
+                        sftpChannel.cd(remoteParentDir);
+                        SftpATTRS attrs = null;
+                        try {
+                            attrs = sftpChannel.stat(remoteParentDir + "/" + sourceFile.getName());
+                        } catch (Exception e) {
+                            logger.debug(remoteParentDir + "/" + sourceFile.getName() + " not found. creating it now.");
+                        }
+                        if (attrs == null) {
+                            sftpChannel.mkdir(sourceFile.getName());
+                        }
+                        sftpChannel.cd("..");
+                        for (File f : files) {
+                            uploadDirectory(f.getAbsolutePath(), remoteParentDir + "/" + sourceFile.getName());
                         }
                     }
-
                 }
-            } else {
-                File[] files = sourceFile.listFiles();
-                if (files != null && !sourceFile.getName().startsWith(".")) {
-                    sftpChannel.cd(remoteParentDir);
-                    SftpATTRS attrs = null;
-                    // check if the directory is already existing
-                    try {
-                        attrs = sftpChannel.stat(remoteParentDir + "/" + sourceFile.getName());
-                    } catch (Exception e) {
-                        logger.debug(remoteParentDir + "/" + sourceFile.getName() + " not found. creating it now.");
-                    }
-                    // else create a directory
-                    if (attrs == null) {
-                        sftpChannel.mkdir(sourceFile.getName());
-                    }
-                    sftpChannel.cd("..");
-                    for (File f : files) {
-                        uploadDirectory(f.getAbsolutePath(), remoteParentDir + "/" + sourceFile.getName());
-                    }
-                }
+                sftpChannel.cd("..");
+            } catch (SftpException e) {
+                throw new FTPClientException(e);
             }
-        }catch (SftpException e) {
-            throw new FTPClientException(e);
+            return true;
+        } else {
+            return false;
         }
     }
 
