@@ -1,6 +1,5 @@
 package ftp.core;
 
-import com.jcraft.jsch.IO;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -80,7 +79,7 @@ public class FTPConnection implements RemoteConnection {
     @Override
     public boolean createNewDirectory(String dirName) throws IOException, FTPClientException {
         try {
-            if (!checkDirectoryExists(dirName)) {
+            if (!checkRemoteDirectoryExists(dirName)) {
                 client.makeDirectory(dirName);
             }
         } catch (SocketException e) {
@@ -89,28 +88,6 @@ public class FTPConnection implements RemoteConnection {
             return false;
         }
         return true;
-    }
-
-    /**
-     * This method is used to download a multiple files from a remote FTP server to local machine.
-     *
-     * @param remotePaths - remote path's (String array) from where you want to download the file from.
-     * @param localPath - local path where you want to download the file to.
-     * @return [boolean] - true if success.
-     * @throws IOException
-     */
-    @Override
-    public boolean downloadMultipleFiles(String[] remotePaths, String localPath) throws IOException {
-        System.out.println("Remote paths --> " + remotePaths);
-        try {
-            for (String remotePath : remotePaths) {
-                downloadSingleFile(localPath, remotePath);
-            }
-        } catch (IOException | FTPClientException e) {
-            System.out.println("-- Error while downloading files from Remote server --");
-        }
-
-        return false;
     }
 
     /**
@@ -145,7 +122,7 @@ public class FTPConnection implements RemoteConnection {
      * @throws FTPClientException - can throw IOException while handling files.
      */
     @Override
-    public boolean checkDirectoryExists(String dirPath) throws FTPClientException {
+    public boolean checkRemoteDirectoryExists(String dirPath) throws FTPClientException {
         try {
             // This is the limitation of the FTPClient library that we are using, thus we need to use changeWorkingDirectory and later traverse back to original path.
             client.changeWorkingDirectory(dirPath);
@@ -250,7 +227,7 @@ public class FTPConnection implements RemoteConnection {
         File localFile = new File(localFilePath);
         if (localFile.isFile()) {
             remoteFilePath = remotePath + "/" + localFile.getName();
-            if (checkDirectoryExists(remotePath)) {
+            if (checkRemoteDirectoryExists(remotePath)) {
                 InputStream inputStream = new FileInputStream(localFile);
                 try {
                     client.setFileType(org.apache.commons.net.ftp.FTP.BINARY_FILE_TYPE);
@@ -322,29 +299,29 @@ public class FTPConnection implements RemoteConnection {
     }
 
     /**
+     * This method is used to create a copy of a directory on remote server.
      *
-     * @param sourceDir
-     * @param desDir
-     * @return
+     * @param sourceDir - the name of the directory you want to copy.
+     * @param desDir - the name of the new copy
+     * @return [boolean]
      * @throws FTPClientException
      * @throws IOException
      */
     @Override
     public boolean copyDirectory(String sourceDir, String desDir) throws FTPClientException, IOException {
-        if (checkDirectoryExists(sourceDir)) {
+        if (checkRemoteDirectoryExists(sourceDir)) {
             String tempFolder = System.getProperty("user.dir") + '\\' + "temp";
             File theDir = new File(tempFolder);
             if (!theDir.exists()) {
                 theDir.mkdirs();
             }
-            System.out.println("Working Directory = " + System.getProperty("user.dir"));
-
             downloadDirectory(client.printWorkingDirectory() + sourceDir, tempFolder);
-            if (!checkDirectoryExists(desDir)) {
+            if (!checkRemoteDirectoryExists(desDir)) {
                 client.makeDirectory(desDir);
             }
             uploadDirectory(tempFolder + '\\' + sourceDir, desDir);
             FileUtils.deleteDirectory(new File(tempFolder));
+            System.out.println("Successfully made a copy of " + sourceDir + " called " + desDir);
             return true;
         }
         System.out.println(sourceDir + " directory does not exist");
@@ -352,64 +329,48 @@ public class FTPConnection implements RemoteConnection {
     }
 
     /**
+     * This method is used to download a directory on the remote server onto local.
      *
      * @param currentDir
      * @param saveDir
+     * @return [boolean]
      * @throws IOException
      * @throws FTPClientException
      */
     @Override
-    public void downloadDirectory(String currentDir, String saveDir) throws IOException, FTPClientException {
+    public boolean downloadDirectory(String currentDir, String saveDir) throws IOException, FTPClientException {
         String parentDir = client.printWorkingDirectory();
         String dirToList = parentDir;
         if (!"".equals(currentDir)) {
             dirToList += "/" + currentDir;
         }
-
         FTPFile[] subFiles = client.listFiles(dirToList);
 
         if (subFiles != null && subFiles.length > 0) {
             for (FTPFile aFile : subFiles) {
                 String currentFileName = aFile.getName();
                 if (".".equals(currentFileName) || "..".equals(currentFileName)) {
-                    // skip parent directory and the directory itself
                     continue;
                 }
-                String filePath = parentDir + "/" + currentDir + "/"
-                        + currentFileName;
+                String filePath = parentDir + "/" + currentDir + "/" + currentFileName;
                 if ("".equals(currentDir)) {
                     filePath = parentDir + "/" + currentFileName;
                 }
-
-                String newDirPath = saveDir + parentDir + File.separator
-                        + currentDir + File.separator + currentFileName;
+                String newDirPath = saveDir + parentDir + File.separator + currentDir + File.separator + currentFileName;
                 if ("".equals(currentDir)) {
-                    newDirPath = saveDir + parentDir + File.separator
-                            + currentFileName;
+                    newDirPath = saveDir + parentDir + File.separator + currentFileName;
                 }
-
                 if (aFile.isDirectory()) {
-                    // create the directory in saveDir
                     File newDir = new File(newDirPath);
-                    boolean created = newDir.mkdirs();
-                    if (created) {
-                        System.out.println("CREATED the directory: " + newDirPath);
-                    } else {
-                        System.out.println("COULD NOT create the directory: " + newDirPath);
-                    }
-
-                    // download the sub directory
+                    newDir.mkdirs();
                     downloadDirectory(filePath, saveDir);
                 } else {
-                    // download the file
-                    boolean success = downloadSingleFile(newDirPath, filePath);
-                    if (success) {
-                        System.out.println("DOWNLOADED the file: " + filePath);
-                    } else {
-                        System.out.println("COULD NOT download the file: " + filePath);
-                    }
+                    downloadSingleFile(newDirPath, filePath);
                 }
             }
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -429,19 +390,41 @@ public class FTPConnection implements RemoteConnection {
         if (!parentDir.exists()) {
             parentDir.mkdir();
         }
-
-        OutputStream outputStream = new BufferedOutputStream(
-                new FileOutputStream(downloadFile));
+        String fileName = getFileNameFromRemote(remoteFilePath);
+        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(downloadFile));
         try {
             client.setFileType(FTP.BINARY_FILE_TYPE);
-            return client.retrieveFile(remoteFilePath, outputStream);
+            logger.info("Downloading file : [" + fileName + "] from remote location");
+            client.retrieveFile(remoteFilePath, outputStream);
+            return true;
         } catch (IOException ex) {
-            throw ex;
+            logger.error("Error Downloading file : [" + remoteFilePath + "] from remote location");
+            return false;
         } finally {
             if (outputStream != null) {
                 outputStream.close();
             }
         }
+    }
+
+    /**
+     * This method is used to download a multiple files from a remote FTP server to local machine.
+     *
+     * @param remotePaths - remote path's (String array) from where you want to download the file from.
+     * @param localPath - local path where you want to download the file to.
+     * @return [boolean] - true if success.
+     * @throws IOException
+     */
+    @Override
+    public boolean downloadMultipleFiles(String[] remotePaths, String localPath) throws IOException {
+        try {
+            for (String remotePath : remotePaths) {
+                downloadSingleFile(localPath, remotePath);
+            }
+        } catch (IOException | FTPClientException e) {
+            System.out.println("-- Error while downloading files from Remote server --");
+        }
+        return false;
     }
 
     /**
@@ -498,16 +481,17 @@ public class FTPConnection implements RemoteConnection {
     }
 
     /**
+     * This method is used to upload a directory on local onto the remote server.
      *
      * @param localParentDir
      * @param remoteParentDir
+     * @return [boolean]
      * @throws IOException
      * @throws FTPClientException
      */
     @Override
-    public void uploadDirectory(String localParentDir, String remoteParentDir) throws IOException, FTPClientException {
+    public boolean uploadDirectory(String localParentDir, String remoteParentDir) throws IOException, FTPClientException {
         String remoteDirPath = client.printWorkingDirectory();
-        System.out.println("LISTING directory: " + localParentDir);
 
         File localDir = new File(localParentDir);
         File[] subFiles = localDir.listFiles();
@@ -518,30 +502,22 @@ public class FTPConnection implements RemoteConnection {
                     remoteFilePath = remoteDirPath;
                 }
                 if (item.isFile()) {
-                    // upload the file
                     String localFilePath = item.getAbsolutePath();
-                    System.out.println("About to upload the file: " + localFilePath);
                     uploadSingleFile(localFilePath, remoteFilePath);
                 } else {
-                    // create directory on the server
                     String remoteSubDirPath = "/" + remoteParentDir + "/" + item.getName();
-                    boolean created = client.makeDirectory(remoteSubDirPath);
-                    if (created) {
-                        System.out.println("CREATED the directory: " + remoteSubDirPath);
-                    } else {
-                        System.out.println("COULD NOT create the directory: " + remoteSubDirPath);
-                    }
-
-                    // upload the sub directory
-
+                    client.makeDirectory(remoteSubDirPath);
                     if ("".equals(remoteParentDir)) {
                         remoteSubDirPath = item.getName();
                     }
-
                     localParentDir = item.getAbsolutePath();
                     uploadDirectory(localParentDir, remoteSubDirPath);
                 }
             }
+            return true;
+        }
+        else {
+            return false;
         }
     }
 
