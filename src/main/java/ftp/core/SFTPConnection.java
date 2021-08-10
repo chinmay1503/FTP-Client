@@ -90,7 +90,10 @@ public class SFTPConnection implements RemoteConnection {
             Vector fileList = sftpChannel.ls(sftpChannel.pwd());
             for (int i = 0; i < fileList.size(); i++) {
                 ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) fileList.get(i);
-                System.out.println(entry.getFilename());
+                String fileName = entry.getFilename();
+                if(!".".equals(fileName) && !"..".equals(fileName)) {
+                    System.out.println(entry.getFilename());
+                }
             }
         } catch (SftpException e) {
             throw new FTPClientException(e);
@@ -101,15 +104,13 @@ public class SFTPConnection implements RemoteConnection {
      * This method is used to delete a file, present on remote SFTP server.
      * @param filePath - remote file path
      * @return [boolean] - true if success
-     * @throws FTPClientException
      */
     @Override
-    public boolean deleteFile(String filePath) throws FTPClientException {
+    public boolean deleteFile(String filePath) {
         try {
             if (!isDirectory(filePath)) {
                 System.out.println("Going to delete file :[" + filePath + "]");
                 sftpChannel.rm(filePath);
-                System.out.println("File deleted successfully.");
                 return true;
             } else {
                 System.out.println("Expecting a file. Please enter valid file path.");
@@ -479,30 +480,36 @@ public class SFTPConnection implements RemoteConnection {
      */
     @Override
     public boolean downloadDirectory(String currentDir, String saveDir) throws IOException, FTPClientException {
-        try {
-            if(!checkLocalDirectoryExists(saveDir)) {
-                File downloadLocation = new File(saveDir);
-                downloadLocation.mkdirs();
-            } 
-            if (checkRemoteDirectoryExists(currentDir)) {
-                Vector<ChannelSftp.LsEntry> list = sftpChannel.ls(currentDir);
-                for (ChannelSftp.LsEntry listItem : list) {
-                    if (!listItem.getAttrs().isDir()) {
-                        if (!(new File(saveDir + "/" + listItem.getFilename())).exists() ||
-                                (listItem.getAttrs().getMTime() > Long.valueOf(new File(saveDir + "/" + listItem.getFilename()).lastModified() / (long) 1000).intValue())) {
-                            new File(saveDir + "/" + listItem.getFilename());
-                            sftpChannel.get(currentDir + "/" + listItem.getFilename(), saveDir + "/" + listItem.getFilename());
+        if (checkRemoteDirectoryExists(currentDir)) {
+            try {
+                if (!checkLocalDirectoryExists(saveDir)) {
+                    File downloadLocation = new File(saveDir);
+                    downloadLocation.mkdirs();
+                }
+                if (checkRemoteDirectoryExists(currentDir)) {
+                    Vector<ChannelSftp.LsEntry> list = sftpChannel.ls(currentDir);
+                    for (ChannelSftp.LsEntry listItem : list) {
+                        if (!listItem.getAttrs().isDir()) {
+                            if (!(new File(saveDir + "/" + listItem.getFilename())).exists() ||
+                                    (listItem.getAttrs().getMTime() > Long.valueOf(new File(saveDir + "/" + listItem.getFilename()).lastModified() / (long) 1000).intValue())) {
+                                new File(saveDir + "/" + listItem.getFilename());
+                                sftpChannel.get(currentDir + "/" + listItem.getFilename(), saveDir + "/" + listItem.getFilename());
+                            }
+                        } else if (!(".".equals(listItem.getFilename()) || "..".equals(listItem.getFilename()))) {
+                            new File(saveDir + "/" + listItem.getFilename()).mkdirs();
+                            downloadDirectory(currentDir + "/" + listItem.getFilename(), saveDir + "/" + listItem.getFilename());
                         }
                     }
-                }  else {
-            return false;
-        }
+                }
             } catch (SftpException e) {
                 throw new FTPClientException(e);
             }
             return true;
+        } else {
+            return false;
         }
     }
+
 
     /**
      * This method is used to upload a directory on local onto the remote server.

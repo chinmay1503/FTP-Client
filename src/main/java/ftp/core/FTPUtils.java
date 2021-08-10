@@ -184,7 +184,7 @@ public class FTPUtils {
                     break;
                 }
                 if (i == (the_list.length - 1)) {
-                    System.out.println("no luck in this directory try another");
+                    System.out.println("file not found in the given location.");
                 }
             }
         } else {

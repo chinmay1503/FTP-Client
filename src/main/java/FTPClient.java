@@ -292,7 +292,7 @@ public class FTPClient {
 
                             System.out.println("6. Put multiple files on remote server\n");
                             String remote_Path = FTPUtils.getInputFromUser(scan, "Enter Remote Destination", "remote_Path");
-                            if(remoteConnection.checkDirectoryExists(remote_Path)){
+                            if(remoteConnection.checkRemoteDirectoryExists(remote_Path)){
                                 String userOpt = FTPUtils.getInputFromUser(scan, "Would you like to upload the contents of the entire directory? y/n\n", "userOption");
                                 if ("y".equalsIgnoreCase(userOpt)) {
                                     String localDirPath = FTPUtils.getInputFromUser(scan, "Enter local Directory Path", "dirPath");
@@ -351,7 +351,7 @@ public class FTPClient {
                                 boolean newDirStatus = remoteConnection.createNewDirectory(dirName);
                                 if (newDirStatus) {
                                     logger.debug("Directory created Successfully");
-                                    System.out.println("Directory created Successfully. *\n");
+                                    System.out.println("Directory created Successfully.\n");
                                 } else {
                                     logger.debug("Error occurred - could not create New Directory in remote server");
                                     System.out.println("-- Error: could not create New Directory in remote server --\n" +
