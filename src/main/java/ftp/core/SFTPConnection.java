@@ -560,9 +560,9 @@ public class SFTPConnection implements RemoteConnection {
             logger.info("Successfully changed the file permissions..!!");
             return true;
         } catch (SftpException | NumberFormatException e) {
-            logger.error("Failed to change file permissions");
-            logger.error(e.getMessage());
-            logger.error("Error. Could not change permissions or invalid chmod code. See the message above.");
+            logger.debug("Failed to change file permissions");
+            logger.debug(e.getMessage());
+            System.out.println("-- Error: Could not change permissions or invalid chmod code. "+ e.getMessage() +" --");
             return false;
         }
     }

@@ -39,7 +39,7 @@ public class FTP_ClientTest {
             connectFTPRemote();
             connectSFTPRemote();
             createDummyFooFile();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new FTPClientException(e);
         } finally {
             if (fs != null) {
@@ -48,7 +48,7 @@ public class FTP_ClientTest {
         }
     }
 
-    private static void populateTestClientCredentials() {
+    private static void populateTestClientCredentials() throws Exception {
         ftpClientCredentials = new ClientCredentials(prop.getProperty("ftp_username"), prop.getProperty("ftp_password"), prop.getProperty("ftp_hostname"), "FTP");
         sftpClientCredentials = new ClientCredentials(prop.getProperty("sftp_username"), prop.getProperty("sftp_password"), prop.getProperty("sftp_hostname"), "SFTP");
     }

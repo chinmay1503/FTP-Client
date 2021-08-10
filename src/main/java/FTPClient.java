@@ -52,16 +52,16 @@ public class FTPClient {
     public static void showConnectionOptions(String promptDialog) throws FTPClientException {
 
         try {
-            logger.info("creating clientCredentials.json file if it does not exsist");
+            logger.debug("creating clientCredentials.json file if it does not exsist");
             File myObj = new File("ClientCredentials.json");
             if (myObj.createNewFile()) {
                 FileWriter myWriter = new FileWriter("ClientCredentials.json");
                 myWriter.write("[]");
                 myWriter.close();
-                logger.info("created the file");
+                logger.debug("created the file");
             }
         } catch (IOException e) {
-            logger.info("Error occurred while creating the file");
+            logger.info("-- Error occurred while creating the file --");
             throw new FTPClientException(e);
         }
 
@@ -197,7 +197,7 @@ public class FTPClient {
                             } while (!promptForRemoteFile);
 
                             do {
-                                localPathUserInput = FTPUtils.getInputFromUser(scan, "\"Enter File Path to download to", "localPathUserInput");
+                                localPathUserInput = FTPUtils.getInputFromUser(scan, "Enter File Path to download to", "localPathUserInput");
                                 promptForLocalPath = remoteConnection.checkLocalDirectoryExists(localPathUserInput);
                                 if (!promptForLocalPath) {
                                     System.out.println("-- Error: could not locate Directory with the name " + localPathUserInput +
@@ -289,43 +289,46 @@ public class FTPClient {
                             logger.debug("starting functionality - Put multiple files on remote server");
 
                             System.out.println("6. Put multiple files on remote server\n");
-                            String remote_Path = FTPUtils.getInputFromUser(scan, "Enter Destination", "remote_Path");
+                            String remote_Path = FTPUtils.getInputFromUser(scan, "Enter Remote Destination", "remote_Path");
+                            if(remoteConnection.checkDirectoryExists(remote_Path)){
+                                String userOpt = FTPUtils.getInputFromUser(scan, "Would you like to upload the contents of the entire directory? y/n\n", "userOption");
+                                if ("y".equalsIgnoreCase(userOpt)) {
+                                    String localDirPath = FTPUtils.getInputFromUser(scan, "Enter local Directory Path", "dirPath");
+                                    remoteConnection.uploadDirectory(localDirPath, remote_Path);
+                                } else {
+                                    Set<String> uploadFilesSet = new HashSet<>();
+                                    boolean uploadMore;
+                                    boolean isValidPath;
+                                    String uploadMoreFiles;
 
-                            String userOpt = FTPUtils.getInputFromUser(scan, "Would you like to upload the contents of the entire directory? y/n\n", "userOption");
-                            if ("y".equalsIgnoreCase(userOpt)) {
-                                String localDirPath = FTPUtils.getInputFromUser(scan, "Enter local Directory Path", "dirPath");
-                                remoteConnection.uploadDirectory(localDirPath, remote_Path);
+                                    do {
+                                        uploadMore = false;
+
+                                        String local_Path = FTPUtils.getInputFromUser(scan, "Enter Local file path, that you want to upload", "local_Path");
+                                        File localFile = new File(local_Path);
+                                        if (localFile.isFile()) {
+                                            uploadFilesSet.add(local_Path);
+                                            isValidPath = true;
+                                        } else {
+                                            System.out.println("-- Error: The local path provided is not valid.--\n");
+                                            isValidPath = false;
+                                        }
+                                        if (isValidPath) {
+                                            uploadMoreFiles = FTPUtils.getInputFromUser(scan, "Do you want to upload another File ? (y/n)", "uploadMoreFiles");
+                                        } else {
+                                            uploadMoreFiles = FTPUtils.getInputFromUser(scan, "Try again? (y/n)", "uploadMoreFiles");
+                                        }
+
+                                        if ("y".equals(uploadMoreFiles)) {
+                                            uploadMore = true;
+                                        }
+                                    } while (uploadMore);
+                                    remoteConnection.uploadMultipleFiles(Arrays.copyOf(uploadFilesSet.toArray(), uploadFilesSet.toArray().length, String[].class), remote_Path);
+
+                                    logger.debug("End of functionality - Put multiple files on remote server");
+                                }
                             } else {
-                                Set<String> uploadFilesSet = new HashSet<>();
-                                boolean uploadMore;
-                                boolean isValidPath;
-                                String uploadMoreFiles;
-
-                                do {
-                                    uploadMore = false;
-
-                                    String local_Path = FTPUtils.getInputFromUser(scan, "Enter Local file path, that you want to upload", "local_Path");
-                                    File localFile = new File(local_Path);
-                                    if (localFile.isFile()) {
-                                        uploadFilesSet.add(local_Path);
-                                        isValidPath = true;
-                                    } else {
-                                        System.out.println("Error: The local path provided is not valid.\n");
-                                        isValidPath = false;
-                                    }
-                                    if (isValidPath) {
-                                        uploadMoreFiles = FTPUtils.getInputFromUser(scan, "Do you want to upload another File ? (y/n)", "uploadMoreFiles");
-                                    } else {
-                                        uploadMoreFiles = FTPUtils.getInputFromUser(scan, "Try again? (y/n)", "uploadMoreFiles");
-                                    }
-
-                                    if ("y".equals(uploadMoreFiles)) {
-                                        uploadMore = true;
-                                    }
-                                } while (uploadMore);
-                                remoteConnection.uploadMultipleFiles(Arrays.copyOf(uploadFilesSet.toArray(), uploadFilesSet.toArray().length, String[].class), remote_Path);
-
-                                logger.debug("End of functionality - Put multiple files on remote server");
+                                System.out.println("-- Error: given remote location does not exist. Check and try again later. --");
                             }
                             break;
 
@@ -340,10 +343,10 @@ public class FTPClient {
 
                                 boolean newDirStatus = remoteConnection.createNewDirectory(dirName);
                                 if (newDirStatus) {
-                                    logger.info("Directory created Successfully");
-                                    System.out.println("* Directory created Successfully. *\n");
+                                    logger.debug("Directory created Successfully");
+                                    System.out.println("Directory created Successfully. *\n");
                                 } else {
-                                    logger.info("Error occurred - could not create New Directory in remote server");
+                                    logger.debug("Error occurred - could not create New Directory in remote server");
                                     System.out.println("-- Error: could not create New Directory in remote server --\n" +
                                             "Directory may already exist. Do you want try creating Directory again ? (y/n)");
                                     String tryAgain = scan.nextLine();
@@ -381,7 +384,7 @@ public class FTPClient {
                             if (success) {
                                 System.out.println(oldName + " was renamed to: " + newName);
                             } else {
-                                System.out.println("Failed to rename: " + oldName);
+                                System.out.println("-- Error Failed to rename: " + oldName +" --");
                             }
                             break;
 
@@ -396,7 +399,7 @@ public class FTPClient {
                                 if (local_rename_success) {
                                     System.out.println("[" + oldLocalName + "] was renamed to: [" + newLocalName + "]");
                                 } else {
-                                    System.out.println("Failed to rename: [" + oldLocalName + "]");
+                                    System.out.println("-- Error: Failed to rename: [" + oldLocalName + "] --");
                                 }
                             }
                             break;
@@ -445,11 +448,11 @@ public class FTPClient {
                             if ("1".equals(searchOption)) {
                                 String keyword = FTPUtils.getInputFromUser(scan, "Enter Search Keyword", "keyword");
                                 int fileCount = remoteConnection.searchFilesWithKeyword(searchFilePath, keyword);
-                                logger.info("The number of files found with keyword :[" + keyword + "] are [" + fileCount + "]");
+                                System.out.println("The number of files found with keyword :[" + keyword + "] are [" + fileCount + "]");
                             } else if ("2".equals(searchOption)) {
                                 String extension = FTPUtils.getInputFromUser(scan, "Enter Search File Extension", "extension");
                                 int fileCount = remoteConnection.searchFilesWithExtension(searchFilePath, extension);
-                                logger.info("The number of files found with extension :[" + extension + "] are [" + fileCount + "]");
+                                System.out.println("The number of files found with extension :[" + extension + "] are [" + fileCount + "]");
                             } else {
                                 logger.debug("-- Error: Invalid Search Option Selected! --");
                                 System.out.println("-- Error: Invalid Search Option Selected! --");
@@ -463,7 +466,7 @@ public class FTPClient {
                             File theDir = new File(local_file_path);
 
                             if (!theDir.isDirectory()) {
-                                System.out.println("Error: Not valid local Directory path.");
+                                System.out.println("-- Error: Not valid local Directory path. --");
                             }
                             if(remoteConnection.checkLocalDirectoryExists(local_file_path)){
                                 remoteConnection.searchFile(userOption, theDir);
@@ -493,7 +496,7 @@ public class FTPClient {
                     }
                 }
             } else {
-                System.out.println("Error: Could not connect to the Server.");
+                System.out.println("-- Error: Could not connect to the Server.--");
                 logger.info("Provide HostName, UserName, Password and select Protocol, when prompted.");
             }
         } catch (Exception e) {
