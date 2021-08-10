@@ -22,7 +22,7 @@ public interface RemoteConnection {
 
     boolean checkLocalDirectoryExists(String dirPath) throws FileNotFoundException;
 
-    boolean checkDirectoryExists(String dirPath) throws FTPClientException;
+    boolean checkRemoteDirectoryExists(String dirPath) throws FTPClientException;
 
     boolean deleteFile(String filePath) throws FTPClientException;
 
