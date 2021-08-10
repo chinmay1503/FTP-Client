@@ -1,6 +1,5 @@
 import ftp.core.*;
 import org.apache.commons.io.FileUtils;
-import org.junit.Ignore;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -98,7 +97,7 @@ public class FTP_ClientTest {
         String path = "/TestFTP";
         ftpRemoteConnection.createNewDirectory(path);
         assertTrue(ftpRemoteConnection.deleteDirectory(path));
-        assertFalse(ftpRemoteConnection.checkDirectoryExists(path));
+        assertFalse(ftpRemoteConnection.checkRemoteDirectoryExists(path));
     }
 
     @Test
@@ -106,7 +105,7 @@ public class FTP_ClientTest {
         String path = "/TestSFTP";
         sftpRemoteConnection.createNewDirectory(path);
         assertTrue(sftpRemoteConnection.deleteDirectory(path));
-        assertFalse(sftpRemoteConnection.checkDirectoryExists(path));
+        assertFalse(sftpRemoteConnection.checkRemoteDirectoryExists(path));
     }
 
     @Test
@@ -376,7 +375,7 @@ public class FTP_ClientTest {
         String testDir = curDir + "/test";
         FileUtils.forceMkdir(new File(testDir));
         FileUtils.touch(new File(testDir + "/a.txt"));
-        if(!ftpRemoteConnection.checkDirectoryExists(testDir)) {
+        if(!ftpRemoteConnection.checkRemoteDirectoryExists(testDir)) {
             ftpRemoteConnection.createNewDirectory("/test");
         }
         ftpRemoteConnection.uploadDirectory(testDir, "/test");
