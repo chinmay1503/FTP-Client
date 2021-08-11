@@ -38,6 +38,6 @@ The executable file "SFTP-Client.exe" is present in the "\out\artifacts". Simply
 ## References
 
   * https://kodehelp.com/java-program-uploading-folder-content-recursively-from-local-to-sftp-server/
-  * https://kodehelp.com/java-program-downloading-directory-folder-content-recursively-sftp-server/
+  * https://stackoverflow.com/questions/11650013/transfer-folder-and-subfolders-using-channelsftp-in-jsch
   * https://www.codejava.net/java-se/ftp/how-to-download-a-complete-folder-from-a-ftp-server
   * https://www.codejava.net/java-se/ftp/how-to-upload-a-directory-to-a-ftp-server
