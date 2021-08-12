@@ -500,6 +500,8 @@ public class FTPClient {
                     }
                     if ("n".equalsIgnoreCase(repeat)) {
                         repeatProcess = false;
+                    } else {
+                        showOptions();
                     }
                 }
             } else {
